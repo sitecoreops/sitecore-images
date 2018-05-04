@@ -1,17 +1,17 @@
 [CmdletBinding()]
 param(
-    [Parameter(Mandatory = $false)]
-    [string]$VersionsFilter = "*",
     [Parameter(Mandatory = $true)]
     [ValidateScript( {Test-Path $_ -PathType 'Container'})] 
     [string]$InstallSourcePath,
+    [Parameter(Mandatory = $true)]
+    [string]$Registry,
     [Parameter(Mandatory = $false)]
-    [string]$Organization,
+    [array]$Tags = @("*"),
     [Parameter(Mandatory = $false)]
     [switch]$SkipPush
 )
 
-function Get-BaseImage
+function Find-BaseImages
 {
     [CmdletBinding()]
     param(
@@ -20,10 +20,8 @@ function Get-BaseImage
         [string]$Path
     )
 
-    Get-ChildItem -Path $Path -Filter "Dockerfile" | Foreach-Object {
-        $fromImages = Get-Content -Path $_.FullName | Where-Object { $_.StartsWith("FROM ") } | ForEach-Object { Write-Output $_.Replace("FROM ", "").Trim() }
-        
-        $fromImages | ForEach-Object {
+    Get-ChildItem -Path $Path -Filter "Dockerfile" -Recurse | ForEach-Object {
+        Get-Content -Path $_.FullName | Where-Object { $_.StartsWith("FROM ") } | ForEach-Object { Write-Output $_.Replace("FROM ", "").Trim() } | ForEach-Object {
             $image = $_
 
             if ($image -like "* as *")
@@ -49,45 +47,48 @@ function Find-BuildSpecifications
         [ValidateScript( {Test-Path $_ -PathType 'Container'})] 
         [string]$Path,
         [Parameter(Mandatory = $true)]
-        [ValidateNotNullOrEmpty()] 
-        [string]$Filter,
-        [Parameter(Mandatory = $true)]
         [ValidateScript( {Test-Path $_ -PathType 'Container'})] 
-        [string]$InstallSourcePath
+        [string]$InstallSourcePath,
+        [Parameter(Mandatory = $true)]
+        [array]$Tags
     )
   
-    Get-ChildItem -Path $Path -Filter $Filter | ForEach-Object {
-        $version = $_.Name
+    Get-ChildItem -Path $Path -Filter "build.json" -Recurse | ForEach-Object {
+        $data = Get-Content -Path $_.FullName | ConvertFrom-Json
+        $sources = @()
 
-        Get-ChildItem -Path $_.FullName -Recurse | Foreach-Object {
-            $folder = $_
-            $buildFilePath = Join-Path $folder.FullName "\build.json"
+        $data.sources | ForEach-Object {
+            $sources += (Join-Path $InstallSourcePath $_)
+        }
 
-            if (Test-Path $buildFilePath -PathType Leaf)
+        $include = $false
+        
+        $Tags | ForEach-Object {
+            if ($data.tag -like $_)
             {
-                $data = Get-Content -Path $buildFilePath | ConvertFrom-Json
-                $sources = $data.sources | ForEach-Object {
-                    Write-Output (Join-Path $InstallSourcePath $_)
-                }
+                $include = $true
 
-                # Default sort order
-                $order = 1000
-
-                # Set sort order if specified
-                if ($data.order -ne $null)
-                {
-                    [int]::TryParse($data.order, [ref]$order) | Out-Null
-                }
-
-                Write-Output (New-Object PSObject -Property @{
-                        Version = $version;    
-                        Tag     = $data.tag;                        
-                        Order   = $order;
-                        Path    = $folder.FullName;
-                        Sources = $sources;
-                    })
+                return
             }
         }
+
+        # Default sort order
+        $order = 1000
+
+        # Set sort order if specified
+        if ($data.order -ne $null)
+        {
+            $order = [int]::Parse($data.order)
+        }
+
+        Write-Output (New-Object PSObject -Property @{
+                Version = $data.version;
+                Include = $include;
+                Tag     = $data.tag;                        
+                Order   = $order;
+                Path    = $_.Directory.FullName;
+                Sources = $sources;
+            })
     }
 }
 
@@ -96,97 +97,98 @@ $ProgressPreference = "SilentlyContinue"
 
 # TODO: Change ADD to COPY
 # TODO: Migrate the rest to new structure
-# TODO: Build Order should be within a VERSION folder?
+# TODO: README.md
 
 $rootPath = (Join-Path $PSScriptRoot "\versions")
 
 # Find out what to build
-$specs = Find-BuildSpecifications -Path $rootPath -InstallSourcePath $InstallSourcePath -Filter $VersionsFilter | Sort-Object -Property Order
+$specs = Find-BuildSpecifications -Path $rootPath -InstallSourcePath $InstallSourcePath -Tags $Tags
 
 # Print what was found
-$specs | Select-Object -Property Version, Tag, Order, Path | Format-Table
-
-# Find and pull latest external images
-$specs | ForEach-Object {
-    $tag = Get-BaseImage -Path $_.Path
-    
-    if ($tag -notmatch "sitecore")
-    {
-        Write-Output $tag
-    }    
-} | Select-Object -Unique | ForEach-Object {
-    $tag = $_
-
-    Write-Host ("Pulling latest base image '{0}'..." -f $tag)
-
-    docker pull $tag
-
-    $LASTEXITCODE -ne 0 | Where-Object { $_ } | ForEach-Object { throw ("Pulling '{0}' failed" -f $tag) }        
+$specs | Sort-Object -Property Version -Descending | Group-Object -Property Version | ForEach-Object {
+    $_.Group | Sort-Object -Property Order | Select-Object -Property Version, Include, Tag, Order, Path | Format-Table
 }
 
+Write-Host "### Build specifications loaded..." -ForegroundColor Green
+
+# Find and pull latest external images
+Find-BaseImages -Path $rootPath | Select-Object -Unique | ForEach-Object {
+    $tag = $_
+
+    if ($tag -notmatch "sitecore")
+    {
+        docker pull $tag
+
+        $LASTEXITCODE -ne 0 | Where-Object { $_ } | ForEach-Object { throw "Failed." }
+    }
+}
+
+Write-Host "### External images up to date..." -ForegroundColor Green
+
 # Start build...
-$specs | ForEach-Object {
-    $spec = $_
-    $tag = $spec.Tag
+$specs | Where-Object { $_.Include } | Sort-Object -Property Version -Descending | Group-Object -Property Version | ForEach-Object {
+    $_.Group | Sort-Object -Property Order | ForEach-Object {
+        $spec = $_
+        $tag = $spec.Tag
 
-    # Save the digest of previous builds for later comparison
-    $previousDigest = $null
+        Write-Host ("### Processing '{0}'..." -f $tag)
+                
+        # Save the digest of previous builds for later comparison
+        $previousDigest = $null
     
-    if ((docker image ls $tag --quiet))
-    {
-        $previousDigest = (docker image inspect $tag) | ConvertFrom-Json | ForEach-Object { $_.Id }
-    }
-
-    Write-Host ("Building '{0}'..." -f $tag)
-
-    # Copy any missing source files into build context
-    $spec.Sources | ForEach-Object {
-        $sourcePath = $_
-        $sourceItem = Get-Item -Path $sourcePath
-        $targetPath = Join-Path $spec.Path $sourceItem.Name
-
-        if (!(Test-Path -Path $targetPath))
+        if ((docker image ls $tag --quiet))
         {
-            Copy-Item $sourceItem -Destination $targetPath -Verbose:$VerbosePreference
+            $previousDigest = (docker image inspect $tag) | ConvertFrom-Json | ForEach-Object { $_.Id }
         }
-    }
+
+        # Copy any missing source files into build context
+        $spec.Sources | ForEach-Object {
+            $sourcePath = $_
+            $sourceItem = Get-Item -Path $sourcePath
+            $targetPath = Join-Path $spec.Path $sourceItem.Name
+
+            if (!(Test-Path -Path $targetPath))
+            {
+                Copy-Item $sourceItem -Destination $targetPath -Verbose:$VerbosePreference
+            }
+        }
     
-    # Build image
-    docker image build --isolation "hyperv" --memory 4GB --tag $tag $spec.Path
+        # Build image
+        docker image build --isolation "hyperv" --memory 4GB --tag $tag $spec.Path
 
-    $LASTEXITCODE -ne 0 | Where-Object { $_ } | ForEach-Object { throw ("Build of '{0}' failed" -f $tag) }
+        $LASTEXITCODE -ne 0 | Where-Object { $_ } | ForEach-Object { throw "Failed." }
 
-    # Tag image
-    if (![string]::IsNullOrEmpty($Organization))
-    {
-        $newtag = "{0}/{1}" -f $Organization, $tag
+        # Determine if we need to push
+        $currentDigest = (docker image inspect $tag) | ConvertFrom-Json | ForEach-Object { $_.Id }
 
-        docker image tag $tag $newtag
+        if ($currentDigest -eq $previousDigest)
+        {
+            Write-Host "### Done, current digest is the same as the previous, image has not changed since last build."
 
-        $LASTEXITCODE -ne 0 | Where-Object { $_ } | ForEach-Object { throw ("Tagging of '{0}' with '{1}' failed" -f $tag, $newtag) }
+            return
+        }
+        
+        # Tag image
+        $fulltag = "{0}/{1}" -f $Registry, $tag
+
+        docker image tag $tag $fulltag
+
+        $LASTEXITCODE -ne 0 | Where-Object { $_ } | ForEach-Object { throw "Failed." }
+
+        # Push image
+        if ($SkipPush)
+        {
+            Write-Warning "### Done, SkipPush switch used."
+
+            return
+        }
+        
+        docker image push $fulltag
+
+        $LASTEXITCODE -ne 0 | Where-Object { $_ } | ForEach-Object { throw "Failed." }
+
+        Write-Host ("### Done, image '{0}' pushed." -f $fulltag)
     }
 
-    # Determine if we need to push
-    $currentDigest = (docker image inspect $tag) | ConvertFrom-Json | ForEach-Object { $_.Id }
-
-    if ($currentDigest -eq $previousDigest)
-    {
-        Write-Host "Done, current digest is the same as the previous, image has not changed since last build." -ForegroundColor Green
-
-        return
-    }
-
-    if ($SkipPush)
-    {
-        Write-Warning "Done, SkipPush switch used."
-
-        return
-    }
-    
-    # Push image
-    docker image push $tag
-
-    $LASTEXITCODE -ne 0 | Where-Object { $_ } | ForEach-Object { throw ("Push of '{0}' failed" -f $tag) }
-
-    Write-Host ("Image '{0}' pushed." -f $tag) -ForegroundColor Green
+    Write-Host ("### Version '{0}' processed." -f $_.Name) -ForegroundColor Green
 }

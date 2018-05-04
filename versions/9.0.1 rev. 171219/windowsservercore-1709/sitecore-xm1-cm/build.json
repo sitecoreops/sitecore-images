@@ -1,5 +1,6 @@
 {
-    "tag": "sitecore-xm1:9.0.171219-cm-windowsservercore-1709",
+    "version": "9.0.1 rev. 171219",
+    "tag": "sitecore-xm1-cm:9.0.171219-windowsservercore-1709",
     "order": 1,
     "sources": [
         "license.xml",
