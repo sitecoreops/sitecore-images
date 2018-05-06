@@ -102,9 +102,7 @@ $rootPath = (Join-Path $PSScriptRoot "\images")
 $specs = Find-BuildSpecifications -Path $rootPath -InstallSourcePath $InstallSourcePath -Tags $Tags
 
 # Print what was found
-$specs | Sort-Object -Property Version | Group-Object -Property Version | ForEach-Object {
-    $_.Group | Sort-Object -Property Order | Select-Object -Property Version, Include, Tag, Order, Path | Format-Table
-}
+$specs | Sort-Object -Property Version, Order | Select-Object -Property Version, Include, Tag, Order, Path | Format-Table
 
 Write-Host "### Build specifications loaded..." -ForegroundColor Green
 
@@ -123,70 +121,66 @@ Find-BaseImages -Path $rootPath | Select-Object -Unique | ForEach-Object {
 Write-Host "### External images up to date..." -ForegroundColor Green
 
 # Start build...
-$specs | Where-Object { $_.Include } | Sort-Object -Property Version -Descending | Group-Object -Property Version | ForEach-Object {
-    $_.Group | Sort-Object -Property Order | ForEach-Object {
-        $spec = $_
-        $tag = $spec.Tag
+$specs | Where-Object { $_.Include } | Sort-Object -Property Version, Order | ForEach-Object {
+    $spec = $_
+    $tag = $spec.Tag
 
-        Write-Host ("### Processing '{0}'..." -f $tag)
-                
-        # Save the digest of previous builds for later comparison
-        $previousDigest = $null
+    Write-Host ("### Processing '{0}'..." -f $tag)
     
-        if ((docker image ls $tag --quiet))
-        {
-            $previousDigest = (docker image inspect $tag) | ConvertFrom-Json | ForEach-Object { $_.Id }
-        }
-
-        # Copy any missing source files into build context
-        $spec.Sources | ForEach-Object {
-            $sourcePath = $_
-            $sourceItem = Get-Item -Path $sourcePath
-            $targetPath = Join-Path $spec.Path $sourceItem.Name
-
-            if (!(Test-Path -Path $targetPath))
-            {
-                Copy-Item $sourceItem -Destination $targetPath -Verbose:$VerbosePreference
-            }
-        }
+    # Save the digest of previous builds for later comparison
+    $previousDigest = $null
     
-        # Build image
-        docker image build --isolation "hyperv" --memory 4GB --tag $tag $spec.Path
-
-        $LASTEXITCODE -ne 0 | Where-Object { $_ } | ForEach-Object { throw "Failed." }
-
-        # Tag image
-        $fulltag = "{0}/{1}" -f $Registry, $tag
-
-        docker image tag $tag $fulltag
-
-        $LASTEXITCODE -ne 0 | Where-Object { $_ } | ForEach-Object { throw "Failed." }
-
-        # Check to see if we need to stop here...
-        if ($PushMode -eq "Never")
-        {
-            Write-Warning ("### Done, but not pushed, since 'PushMode' is '{0}'." -f $PushMode)
-
-            return
-        }
-
-        # Determine if we need to push
-        $currentDigest = (docker image inspect $tag) | ConvertFrom-Json | ForEach-Object { $_.Id }
-
-        if (($PushMode -eq "WhenChanged") -and ($currentDigest -eq $previousDigest))
-        {
-            Write-Host ("### Done, but not pushed since 'PushMode' is '{0}' and the image has not changed since last build." -f $PushMode)
-
-            return
-        }
-
-        # Push image
-        docker image push $fulltag
-
-        $LASTEXITCODE -ne 0 | Where-Object { $_ } | ForEach-Object { throw "Failed." }
-
-        Write-Host ("### Done, image '{0}' pushed." -f $fulltag)
+    if ((docker image ls $tag --quiet))
+    {
+        $previousDigest = (docker image inspect $tag) | ConvertFrom-Json | ForEach-Object { $_.Id }
     }
 
-    Write-Host ("### Version '{0}' processed." -f $_.Name) -ForegroundColor Green
+    # Copy any missing source files into build context
+    $spec.Sources | ForEach-Object {
+        $sourcePath = $_
+        $sourceItem = Get-Item -Path $sourcePath
+        $targetPath = Join-Path $spec.Path $sourceItem.Name
+
+        if (!(Test-Path -Path $targetPath))
+        {
+            Copy-Item $sourceItem -Destination $targetPath -Verbose:$VerbosePreference
+        }
+    }
+    
+    # Build image
+    docker image build --isolation "hyperv" --memory 4GB --tag $tag $spec.Path
+
+    $LASTEXITCODE -ne 0 | Where-Object { $_ } | ForEach-Object { throw "Failed." }
+
+    # Tag image
+    $fulltag = "{0}/{1}" -f $Registry, $tag
+
+    docker image tag $tag $fulltag
+
+    $LASTEXITCODE -ne 0 | Where-Object { $_ } | ForEach-Object { throw "Failed." }
+
+    # Check to see if we need to stop here...
+    if ($PushMode -eq "Never")
+    {
+        Write-Warning ("### Done with '{0}', but not pushed since 'PushMode' is '{1}'." -f $tag, $PushMode)
+
+        return
+    }
+
+    # Determine if we need to push
+    $currentDigest = (docker image inspect $tag) | ConvertFrom-Json | ForEach-Object { $_.Id }
+
+    if (($PushMode -eq "WhenChanged") -and ($currentDigest -eq $previousDigest))
+    {
+        Write-Host ("### Done with '{0}', but not pushed since 'PushMode' is '{1}' and the image has not changed since last build." -f $tag, $PushMode) -ForegroundColor Green
+
+        return
+    }
+
+    # Push image
+    docker image push $fulltag
+
+    $LASTEXITCODE -ne 0 | Where-Object { $_ } | ForEach-Object { throw "Failed." }
+
+    Write-Host ("### Done with '{0}', image pushed." -f $fulltag) -ForegroundColor Green
 }
