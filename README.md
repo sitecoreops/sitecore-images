@@ -6,7 +6,8 @@ There are some more background and details in this post: [https://invokecommand.
 
 ## Updates
 
-- [Breaking] Restructured versions and tags to support multiple Windows versions, there are now more repositories one for each topology/role.
+- [Added] Sitecore 9.0.1 SQL dev variant on windowsservercore-1709.
+- [Breaking] Restructured versions and tags to support multiple Windows channels (ltsc2016, 1709, 1803 etc), there are now more repositories per version, one for each topology/role.
 - [Breaking] Decoupled image tags from structure by specifying full tag and version in "build.json".
 - [Added] Sitecore 8.2 Update 7.
 - [Fixed] Added UrlRewrite outbound rule to handle Sitecore redirect after login when container is running on another port than 80 (possible in Windows 10 1803).
