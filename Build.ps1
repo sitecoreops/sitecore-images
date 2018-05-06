@@ -95,17 +95,13 @@ function Find-BuildSpecifications
 $ErrorActionPreference = "STOP"
 $ProgressPreference = "SilentlyContinue"
 
-# TODO: Change ADD to COPY
-# TODO: Migrate the rest to new structure
-# TODO: README.md
-
 $rootPath = (Join-Path $PSScriptRoot "\versions")
 
 # Find out what to build
 $specs = Find-BuildSpecifications -Path $rootPath -InstallSourcePath $InstallSourcePath -Tags $Tags
 
 # Print what was found
-$specs | Sort-Object -Property Version -Descending | Group-Object -Property Version | ForEach-Object {
+$specs | Sort-Object -Property Version | Group-Object -Property Version | ForEach-Object {
     $_.Group | Sort-Object -Property Order | Select-Object -Property Version, Include, Tag, Order, Path | Format-Table
 }
 
