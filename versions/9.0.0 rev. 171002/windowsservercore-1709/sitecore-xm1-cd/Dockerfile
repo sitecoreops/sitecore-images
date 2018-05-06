@@ -8,7 +8,7 @@ ARG SQLADMIN_PASSWORD='HASH-epsom-sunset-cost7!'
 ARG SIF_CONFIG=${INSTALL_TEMP}\\sitecore-XM1-cd.json
 ARG SIF_PACKAGE=${INSTALL_TEMP}\\'Sitecore*_cd.scwdp.zip'
 
-ADD . ${INSTALL_TEMP}
+COPY . ${INSTALL_TEMP}
 
 # Install Sitecore, cleanup and start site
 RUN Expand-Archive -Path (Join-Path $env:INSTALL_TEMP '*.zip') -DestinationPath $env:INSTALL_TEMP; `
