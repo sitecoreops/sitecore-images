@@ -188,5 +188,5 @@ $specs | Where-Object { $_.Include } | Sort-Object -Property Version -Descending
         Write-Host ("### Done, image '{0}' pushed." -f $fulltag)
     }
 
-    Write-Host ("### Tag '{0}' processed." -f $tag) -ForegroundColor Green
+    Write-Host ("### Version '{0}' processed." -f $_.Name) -ForegroundColor Green
 }
