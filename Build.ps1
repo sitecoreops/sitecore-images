@@ -96,7 +96,7 @@ function Find-BuildSpecifications
 $ErrorActionPreference = "STOP"
 $ProgressPreference = "SilentlyContinue"
 
-$rootPath = (Join-Path $PSScriptRoot "\versions")
+$rootPath = (Join-Path $PSScriptRoot "\images")
 
 # Find out what to build
 $specs = Find-BuildSpecifications -Path $rootPath -InstallSourcePath $InstallSourcePath -Tags $Tags
