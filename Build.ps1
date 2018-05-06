@@ -58,28 +58,22 @@ function Find-BuildSpecifications
         $data = Get-Content -Path $_.FullName | ConvertFrom-Json
         $sources = @()
 
+        # Set full path on sources
         $data.sources | ForEach-Object {
             $sources += (Join-Path $InstallSourcePath $_)
         }
 
-        $include = $false
-        
-        $Tags | ForEach-Object {
-            if ($data.tag -like $_)
-            {
-                $include = $true
+        # Set include
+        $include = ($Tags | ForEach-Object { $data.tag -like $_ }) -contains $true
 
-                return
-            }
-        }
-
-        # Default sort order
-        $order = 1000
-
-        # Set sort order if specified
+        # Set order or default
         if ($data.order -ne $null)
         {
             $order = [int]::Parse($data.order)
+        }
+        else
+        {
+            $order = 1000
         }
 
         Write-Output (New-Object PSObject -Property @{
