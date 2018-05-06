@@ -1,5 +1,5 @@
 # escape=`
-FROM microsoft/aspnet:4.7.1-windowsservercore-1709 as builder
+FROM sitecore-base:9.0.171219-windowsservercore-1709 as builder
 
 SHELL ["powershell", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';"]
 
@@ -22,11 +22,6 @@ ARG SOLR_VERSION=6.6.2
 RUN Invoke-WebRequest -Uri ('http://archive.apache.org/dist/lucene/solr/{0}/solr-{0}.zip' -f $env:SOLR_VERSION) -OutFile /solr.zip; `
     Expand-Archive -Path /solr.zip -DestinationPath /temp; `
     Move-Item -Path "C:/temp/solr-*" -Destination c:\solr;
-
-# Install SIF
-RUN Install-PackageProvider -Name NuGet -Force | Out-Null; `
-    Register-PSRepository -Name SitecoreGallery -SourceLocation https://sitecore.myget.org/F/sc-powershell/api/v2; `
-    Install-Module SitecoreInstallFramework -RequiredVersion 1.1.0 -Force;
 
 # Install Sitecore Solr cores using SIF
 ARG INSTALL_TEMP='c:\\install'
