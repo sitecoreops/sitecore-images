@@ -8,7 +8,8 @@ param(
     [Parameter(Mandatory = $false)]
     [array]$Tags = @("*"),
     [Parameter(Mandatory = $false)]
-    [switch]$SkipPush
+    [ValidateSet("WhenChanged", "Always", "Never")]
+    [string]$PushMode = "WhenChanged"
 )
 
 function Find-BaseImages
@@ -154,16 +155,6 @@ $specs | Where-Object { $_.Include } | Sort-Object -Property Version -Descending
 
         $LASTEXITCODE -ne 0 | Where-Object { $_ } | ForEach-Object { throw "Failed." }
 
-        # Determine if we need to push
-        $currentDigest = (docker image inspect $tag) | ConvertFrom-Json | ForEach-Object { $_.Id }
-
-        if ($currentDigest -eq $previousDigest)
-        {
-            Write-Host "### Done, current digest is the same as the previous, image has not changed since last build."
-
-            return
-        }
-        
         # Tag image
         $fulltag = "{0}/{1}" -f $Registry, $tag
 
@@ -171,14 +162,25 @@ $specs | Where-Object { $_.Include } | Sort-Object -Property Version -Descending
 
         $LASTEXITCODE -ne 0 | Where-Object { $_ } | ForEach-Object { throw "Failed." }
 
-        # Push image
-        if ($SkipPush)
+        # Check to see if we need to stop here...
+        if ($PushMode -eq "Never")
         {
-            Write-Warning "### Done, SkipPush switch used."
+            Write-Warning ("### Done, but not pushed, since 'PushMode' is '{0}'." -f $PushMode)
 
             return
         }
-        
+
+        # Determine if we need to push
+        $currentDigest = (docker image inspect $tag) | ConvertFrom-Json | ForEach-Object { $_.Id }
+
+        if (($PushMode -eq "WhenChanged") -and ($currentDigest -eq $previousDigest))
+        {
+            Write-Host ("### Done, but not pushed since 'PushMode' is '{0}' and the image has not changed since last build." -f $PushMode)
+
+            return
+        }
+
+        # Push image
         docker image push $fulltag
 
         $LASTEXITCODE -ne 0 | Where-Object { $_ } | ForEach-Object { throw "Failed." }

@@ -1,15 +1,15 @@
 # Repository of Sitecore Docker base images
 
-Build your own Docker images out of every released Sitecore version since 8.2 rev. 170407 (Update 3) - the first version that officially supported Windows Server 2016. You can use this repository from you own build server and have it build and push images to your own private Docker repository.
+Build your own Docker images out of every released Sitecore version since 8.2 rev. 170407 (Update 3) - the first version that officially supported Windows Server 2016. You can use this repository, preferably from a fork so you are in control of updates, on you own build server and have it build and push images to your own private Docker repository.
 
 There are some more background and details in this post: [https://invokecommand.net/posts/automatically-build-and-update-base-images](https://invokecommand.net/posts/automatically-build-and-update-base-images).
 
 ## Updates
 
 - [Breaking] Restructured versions and tags to support multiple Windows versions, there are now more repositories one for each topology/role.
-- [Changed] Decoupled image tags from structure by specifying full tag and version in "build.json". 
+- [Breaking] Decoupled image tags from structure by specifying full tag and version in "build.json".
 - [Added] Sitecore 8.2 Update 7.
-- [Fixed] Added UrlRewrite outbound rule to handle Sitecore redirect after login when container is running on another port than 80 (possible in Windows 10 Insider builds for the upcoming 1803 release in April).
+- [Fixed] Added UrlRewrite outbound rule to handle Sitecore redirect after login when container is running on another port than 80 (possible in Windows 10 1803).
 - [Fixed] Solr build errors regarding downloads from github (TLS 1.2 now used).
 - [Added] Specialized Solr image with all Sitecore cores embedded **and** volume support, for Sitecore 9.0.1 (which defaults to use Solr).
 - [Added] Specialized SQL Server images with all Sitecore databases embedded **and** volume support, for Sitecore 9.
@@ -41,6 +41,7 @@ Configure your build server to:
 # Build and push
 . (Join-Path $PSScriptRoot "Build.ps1") `
     -InstallSourcePath "PATH TO WHERE YOU KEEP ALL SITECORE ZIP FILES AND LICENSE.XML" `
-    -Tags "*" ` # optional, set to for example "sitecore*:9.0*" to only build 9.0.x images.
-    -Registry "YOUR REGISTRY NAME" # On Docker Hub it's your username or organization, else it's the DNS to your private registry.
+    -Registry "YOUR REGISTRY NAME" ` # On Docker Hub it's your username or organization, else it's the DNS to your private registry.
+    -Tags "*" ` # optional (default "*"), set to for example "sitecore*:9.0*" to only build 9.0.x images.
+    -PushMode "WhenChanged" # optional (default "WhenChanged"), can also be "Never" or "Always".
 ````
