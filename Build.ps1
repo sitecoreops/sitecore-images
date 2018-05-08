@@ -58,6 +58,7 @@ function Find-BuildSpecifications
 
     Get-ChildItem -Path $Path -Filter "build.json" -Recurse | ForEach-Object {
         $data = Get-Content -Path $_.FullName | ConvertFrom-Json
+        $tag = $data.tag
         $sources = @()
 
         # Resolve the full path on each source file
@@ -66,16 +67,24 @@ function Find-BuildSpecifications
         }
 
         # Set include
-        $include = ($Tags | ForEach-Object { $data.tag -like $_ }) -contains $true
+        $include = ($Tags | ForEach-Object { $tag -like $_ }) -contains $true
 
         # Set order to first matching rule
-        $rule = $OrderingRules.Keys | Where-Object { $data.tag -match $_ } | Select-Object -First 1
+        $rule = $OrderingRules.Keys | Where-Object { $tag -match $_ } | Select-Object -First 1
         $order = $OrderingRules[$rule]
 
+        # Set group, extracted from the tag
+        $group = $tag.Substring($tag.IndexOf(":") + 1)
+
+        if ($group.IndexOf("-") -gt -1)
+        {
+            $group = $group.Substring(0, $group.IndexOf("-"))
+        }
+
         Write-Output (New-Object PSObject -Property @{
-                Version = $data.version;
+                Group = $group;
                 Include = $include;
-                Tag     = $data.tag;                        
+                Tag     = $tag;                        
                 Order   = $order;
                 Path    = $_.Directory.FullName;
                 Sources = $sources;
@@ -83,21 +92,22 @@ function Find-BuildSpecifications
     }
 }
 
+# Setup
 $ErrorActionPreference = "STOP"
 $ProgressPreference = "SilentlyContinue"
 
 $rootPath = (Join-Path $PSScriptRoot "\images")
 
 # Specify the order when building. This is the most simple approch I could come up with for handling dependencies between images. If needed in the future, look into https://en.wikipedia.org/wiki/Topological_sorting.
-$orderingRules = New-Object System.Collections.Specialized.OrderedDictionary
-$orderingRules.Add("^sitecore-base:(.*)$", 100)
-$orderingRules.Add("^(.*)$", 1000)
+$ordering = New-Object System.Collections.Specialized.OrderedDictionary
+$ordering.Add("^sitecore-base:(.*)$", 100)
+$ordering.Add("^(.*)$", 1000)
     
 # Find out what to build
-$specs = Find-BuildSpecifications -Path $rootPath -InstallSourcePath $InstallSourcePath -Tags $Tags -OrderingRules $orderingRules
+$specs = Find-BuildSpecifications -Path $rootPath -InstallSourcePath $InstallSourcePath -Tags $Tags -OrderingRules $ordering
 
 # Print what was found
-$specs | Sort-Object -Property Version, Order | Select-Object -Property Version, Include, Tag, Order, Path | Format-Table
+$specs | Sort-Object -Property Group, Order | Select-Object -Property Group, Tag, Include, Order, Path | Format-Table
 
 return
 Write-Host "### Build specifications loaded..." -ForegroundColor Green
@@ -114,7 +124,7 @@ Find-BaseImages -Path $rootPath | Select-Object -Unique | ForEach-Object {
     }
 }
 
-Write-Host "### External images up to date..." -ForegroundColor Green
+Write-Host "### External images is up to date..." -ForegroundColor Green
 
 # Start build...
 $specs | Where-Object { $_.Include } | Sort-Object -Property Version, Order | ForEach-Object {
