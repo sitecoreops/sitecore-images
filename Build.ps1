@@ -73,16 +73,7 @@ function Find-BuildSpecifications
         $rule = $OrderingRules.Keys | Where-Object { $tag -match $_ } | Select-Object -First 1
         $order = $OrderingRules[$rule]
 
-        # Set group, extracted from the tag
-        $group = $tag.Substring($tag.IndexOf(":") + 1)
-
-        if ($group.IndexOf("-") -gt -1)
-        {
-            $group = $group.Substring(0, $group.IndexOf("-"))
-        }
-
         Write-Output (New-Object PSObject -Property @{
-                Group = $group;
                 Include = $include;
                 Tag     = $tag;                        
                 Order   = $order;
@@ -98,18 +89,18 @@ $ProgressPreference = "SilentlyContinue"
 
 $rootPath = (Join-Path $PSScriptRoot "\images")
 
-# Specify the order when building. This is the most simple approch I could come up with for handling dependencies between images. If needed in the future, look into https://en.wikipedia.org/wiki/Topological_sorting.
+# Specify the order when building. This is the most simple approch for handling dependencies between images. If needed in the future, look into https://en.wikipedia.org/wiki/Topological_sorting.
 $ordering = New-Object System.Collections.Specialized.OrderedDictionary
 $ordering.Add("^sitecore-base:(.*)$", 100)
+$ordering.Add("^sitecore-openjdk:(.*)$", 100)
 $ordering.Add("^(.*)$", 1000)
     
 # Find out what to build
 $specs = Find-BuildSpecifications -Path $rootPath -InstallSourcePath $InstallSourcePath -Tags $Tags -OrderingRules $ordering
 
 # Print what was found
-$specs | Sort-Object -Property Group, Order | Select-Object -Property Group, Tag, Include, Order, Path | Format-Table
+$specs | Sort-Object -Property Order | Select-Object -Property Tag, Include, Order, Path | Format-Table
 
-return
 Write-Host "### Build specifications loaded..." -ForegroundColor Green
 
 # Find and pull latest external images
