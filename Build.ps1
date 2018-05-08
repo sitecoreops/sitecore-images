@@ -89,7 +89,7 @@ $ProgressPreference = "SilentlyContinue"
 
 $rootPath = (Join-Path $PSScriptRoot "\images")
 
-# Specify the order when building. This is the most simple approch for handling dependencies between images. If needed in the future, look into https://en.wikipedia.org/wiki/Topological_sorting.
+# Specify ordering for each tag, used to ensure base images are build first. This is the most simple approach I could come up with for handling dependencies between images. If needed in the future, look into something like https://en.wikipedia.org/wiki/Topological_sorting.
 $defaultOrder = 1000
 $ordering = New-Object System.Collections.Specialized.OrderedDictionary
 $ordering.Add("^sitecore-base:(.*)$", 100)
@@ -113,8 +113,6 @@ $unsortedSpecs | Where-Object { $_.Order -eq $defaultOrder } | ForEach-Object {
 # Print what was found
 $specs | Select-Object -Property Tag, Include, Order, Path | Format-Table
 
-
-return
 Write-Host "### Build specifications loaded..." -ForegroundColor Green
 
 # Find and pull latest external images
