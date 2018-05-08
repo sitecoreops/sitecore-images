@@ -90,7 +90,7 @@ $rootPath = (Join-Path $PSScriptRoot "\images")
 
 # Specify the order when building. This is the most simple approch I could come up with for handling dependencies between images. If needed in the future, look into https://en.wikipedia.org/wiki/Topological_sorting.
 $orderingRules = New-Object System.Collections.Specialized.OrderedDictionary
-$orderingRules.Add("^sitecore-base:(.*)$", 10)
+$orderingRules.Add("^sitecore-base:(.*)$", 100)
 $orderingRules.Add("^(.*)$", 1000)
     
 # Find out what to build
