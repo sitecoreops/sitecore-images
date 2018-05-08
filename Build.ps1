@@ -51,14 +51,16 @@ function Find-BuildSpecifications
         [ValidateScript( {Test-Path $_ -PathType 'Container'})] 
         [string]$InstallSourcePath,
         [Parameter(Mandatory = $true)]
-        [array]$Tags
+        [array]$Tags,
+        [Parameter(Mandatory = $true)]
+        [System.Collections.Specialized.OrderedDictionary]$OrderingRules
     )
-  
+
     Get-ChildItem -Path $Path -Filter "build.json" -Recurse | ForEach-Object {
         $data = Get-Content -Path $_.FullName | ConvertFrom-Json
         $sources = @()
 
-        # Set full path on sources
+        # Resolve the full path on each source file
         $data.sources | ForEach-Object {
             $sources += (Join-Path $InstallSourcePath $_)
         }
@@ -66,15 +68,9 @@ function Find-BuildSpecifications
         # Set include
         $include = ($Tags | ForEach-Object { $data.tag -like $_ }) -contains $true
 
-        # Set order or default
-        if ($data.order -ne $null)
-        {
-            $order = [int]::Parse($data.order)
-        }
-        else
-        {
-            $order = 1000
-        }
+        # Set order to first matching rule
+        $rule = $OrderingRules.Keys | Where-Object { $data.tag -match $_ } | Select-Object -First 1
+        $order = $OrderingRules[$rule]
 
         Write-Output (New-Object PSObject -Property @{
                 Version = $data.version;
@@ -92,12 +88,18 @@ $ProgressPreference = "SilentlyContinue"
 
 $rootPath = (Join-Path $PSScriptRoot "\images")
 
+# Specify the order when building. This is the most simple approch I could come up with for handling dependencies between images. If needed in the future, look into https://en.wikipedia.org/wiki/Topological_sorting.
+$orderingRules = New-Object System.Collections.Specialized.OrderedDictionary
+$orderingRules.Add("^sitecore-base:(.*)$", 10)
+$orderingRules.Add("^(.*)$", 1000)
+    
 # Find out what to build
-$specs = Find-BuildSpecifications -Path $rootPath -InstallSourcePath $InstallSourcePath -Tags $Tags
+$specs = Find-BuildSpecifications -Path $rootPath -InstallSourcePath $InstallSourcePath -Tags $Tags -OrderingRules $orderingRules
 
 # Print what was found
 $specs | Sort-Object -Property Version, Order | Select-Object -Property Version, Include, Tag, Order, Path | Format-Table
 
+return
 Write-Host "### Build specifications loaded..." -ForegroundColor Green
 
 # Find and pull latest external images
