@@ -53,7 +53,7 @@ function Find-BuildSpecifications
         [Parameter(Mandatory = $true)]
         [array]$Tags,
         [Parameter(Mandatory = $true)]
-        [System.Collections.Specialized.OrderedDictionary]$OrderingRules
+        [System.Collections.Specialized.OrderedDictionary]$OrderRules
     )
 
     Get-ChildItem -Path $Path -Filter "build.json" -Recurse | ForEach-Object {
@@ -70,8 +70,8 @@ function Find-BuildSpecifications
         $include = ($Tags | ForEach-Object { $tag -like $_ }) -contains $true
 
         # Set order to first matching rule
-        $rule = $OrderingRules.Keys | Where-Object { $tag -match $_ } | Select-Object -First 1
-        $order = $OrderingRules[$rule]
+        $rule = $OrderRules.Keys | Where-Object { $tag -match $_ } | Select-Object -First 1
+        $order = $OrderRules[$rule]
 
         Write-Output (New-Object PSObject -Property @{
                 Include = $include;
@@ -90,17 +90,31 @@ $ProgressPreference = "SilentlyContinue"
 $rootPath = (Join-Path $PSScriptRoot "\images")
 
 # Specify the order when building. This is the most simple approch for handling dependencies between images. If needed in the future, look into https://en.wikipedia.org/wiki/Topological_sorting.
+$defaultOrder = 1000
 $ordering = New-Object System.Collections.Specialized.OrderedDictionary
 $ordering.Add("^sitecore-base:(.*)$", 100)
-$ordering.Add("^sitecore-openjdk:(.*)$", 100)
-$ordering.Add("^(.*)$", 1000)
+$ordering.Add("^sitecore-openjdk:(.*)$", 200)
+$ordering.Add("^(.*)$", $defaultOrder)
     
 # Find out what to build
-$specs = Find-BuildSpecifications -Path $rootPath -InstallSourcePath $InstallSourcePath -Tags $Tags -OrderingRules $ordering
+$unsortedSpecs = Find-BuildSpecifications -Path $rootPath -InstallSourcePath $InstallSourcePath -Tags $Tags -OrderRules $ordering
+
+# Apply build order
+$specs = @()
+
+$unsortedSpecs | Where-Object { $_.Order -lt $defaultOrder } | Sort-Object -Property Order | ForEach-Object {
+    $specs += $_
+}
+
+$unsortedSpecs | Where-Object { $_.Order -eq $defaultOrder } | ForEach-Object {
+    $specs += $_
+}
 
 # Print what was found
-$specs | Sort-Object -Property Order | Select-Object -Property Tag, Include, Order, Path | Format-Table
+$specs | Select-Object -Property Tag, Include, Order, Path | Format-Table
 
+
+return
 Write-Host "### Build specifications loaded..." -ForegroundColor Green
 
 # Find and pull latest external images
