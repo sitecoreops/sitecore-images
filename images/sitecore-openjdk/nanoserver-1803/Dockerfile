@@ -15,7 +15,7 @@ RUN [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tl
     Move-Item -Path ('C:\\{0}' -f ($env:JAVA_OJDKBUILD_ZIP -Replace '.zip', '')) -Destination $env:JAVA_HOME;
 
 # Runtime image
-FROM microsoft/nanoserver:1709 as final
+FROM microsoft/nanoserver:1803 as final
 
 COPY --from=builder /ojdkbuild /ojdkbuild
 

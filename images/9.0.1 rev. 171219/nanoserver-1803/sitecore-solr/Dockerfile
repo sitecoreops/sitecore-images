@@ -44,7 +44,7 @@ RUN New-Item -Path 'c:/clean' -ItemType Directory | Out-Null; `
     Get-ChildItem -Path 'c:/solr/server/solr' | Foreach-Object { Copy-Item -Path $_.FullName -Destination 'c:/clean' -Recurse }
 
 # Runtime image
-FROM sitecore-openjdk:8-nanoserver-1709 as final
+FROM sitecore-openjdk:8-nanoserver-1803 as final
 
 COPY --from=builder /solr /solr
 COPY --from=builder /clean /clean
