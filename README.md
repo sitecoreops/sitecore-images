@@ -61,6 +61,8 @@ docker-compose up (sql,solr,cm), first request to /sitecore/login:
 1709: up: 38 sec, warmup: 45 sec
 1803: up: 26 sec, warmup: 43 sec
 
+1709 vs 1803 image sizes:
+
 sql       : 14.00 GB -> 6.95 GB
 solr      :  1.50 GB ->  672 MB
 xm1 cm/cd :  9.69 GB -> 6.13 GB
