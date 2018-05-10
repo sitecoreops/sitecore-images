@@ -12,34 +12,6 @@ param(
     [string]$PushMode = "WhenChanged"
 )
 
-function Find-BaseImages
-{
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory = $true)]
-        [ValidateScript( {Test-Path $_ -PathType 'Container'})]
-        [string]$Path
-    )
-
-    Get-ChildItem -Path $Path -Filter "Dockerfile" -Recurse | ForEach-Object {
-        Get-Content -Path $_.FullName | Where-Object { $_.StartsWith("FROM ") } | ForEach-Object { Write-Output $_.Replace("FROM ", "").Trim() } | ForEach-Object {
-            $image = $_
-
-            if ($image -like "* as *")
-            {
-                $image = $image.Substring(0, $image.IndexOf(" as "))
-            }
-
-            if ([string]::IsNullOrEmpty($image))
-            {
-                throw ("Invalid Dockerfile '{0}', no FROM image was found?" -f $_.FullName)
-            }
-
-            Write-Output $image
-        }
-    }
-}
-
 function Find-BuildSpecifications
 {
     [CmdletBinding()]
@@ -56,14 +28,35 @@ function Find-BuildSpecifications
         $data = Get-Content -Path $_.FullName | ConvertFrom-Json
         $tag = $data.tag
         $sources = @()
+        $baseImages = @()
 
         # Resolve the full path on each source file
         $data.sources | ForEach-Object {
             $sources += (Join-Path $InstallSourcePath $_)
         }
 
+        # Find base images
+        Get-ChildItem -Path $_.Directory.FullName -Filter "Dockerfile" | ForEach-Object {
+            Get-Content -Path $_.FullName | Where-Object { $_.StartsWith("FROM ") } | ForEach-Object { Write-Output $_.Replace("FROM ", "").Trim() } | ForEach-Object {
+                $image = $_
+
+                if ($image -like "* as *")
+                {
+                    $image = $image.Substring(0, $image.IndexOf(" as "))
+                }
+
+                if ([string]::IsNullOrEmpty($image))
+                {
+                    throw ("Invalid Dockerfile '{0}', no FROM image was found?" -f $_.FullName)
+                }
+
+                $baseImages += $image
+            }
+        }
+
         Write-Output (New-Object PSObject -Property @{
-                Tag      = $tag;                        
+                Tag      = $tag;  
+                Base     = $baseImages;                      
                 Path     = $_.Directory.FullName;
                 Sources  = $sources;
                 Priority = $null;
@@ -113,25 +106,20 @@ $unsortedSpecs | Where-Object { $_.Priority -eq $defaultPriority } | ForEach-Obj
     $specs += $_
 }
 
-# Print what was found
-$specs | Select-Object -Property Tag, Include, Priority, Path | Format-Table
+# Print results
+$specs | Select-Object -Property Tag, Include, Priority, Base | Format-Table
 
 Write-Host "### Build specifications loaded..." -ForegroundColor Green
 
-return
-
-# Find and pull latest external images
-Find-BaseImages -Path $rootPath | Select-Object -Unique | ForEach-Object {
+# Pull latest external images
+$specs | Select-Object -ExpandProperty Base | Where-Object { $_ -notmatch "^sitecore-(.*)$" } | Select-Object -Unique | ForEach-Object {
     $tag = $_
 
-    if ($tag -notmatch "sitecore")
-    {
-        docker pull $tag
+    docker pull $tag
 
-        $LASTEXITCODE -ne 0 | Where-Object { $_ } | ForEach-Object { throw "Failed." }
+    $LASTEXITCODE -ne 0 | Where-Object { $_ } | ForEach-Object { throw "Failed." }
 
-        Write-Host ("### External image '{0}' is latest." -f $tag)
-    }
+    Write-Host ("### External image '{0}' is latest." -f $tag)
 }
 
 Write-Host "### External images is up to date..." -ForegroundColor Green
