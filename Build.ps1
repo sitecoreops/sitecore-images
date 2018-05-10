@@ -49,11 +49,7 @@ function Find-BuildSpecifications
         [string]$Path,
         [Parameter(Mandatory = $true)]
         [ValidateScript( {Test-Path $_ -PathType 'Container'})] 
-        [string]$InstallSourcePath,
-        [Parameter(Mandatory = $true)]
-        [array]$Tags,
-        [Parameter(Mandatory = $true)]
-        [System.Collections.Specialized.OrderedDictionary]$OrderRules
+        [string]$InstallSourcePath
     )
 
     Get-ChildItem -Path $Path -Filter "build.json" -Recurse | ForEach-Object {
@@ -66,19 +62,12 @@ function Find-BuildSpecifications
             $sources += (Join-Path $InstallSourcePath $_)
         }
 
-        # Set include
-        $include = ($Tags | ForEach-Object { $tag -like $_ }) -contains $true
-
-        # Set order to first matching rule
-        $rule = $OrderRules.Keys | Where-Object { $tag -match $_ } | Select-Object -First 1
-        $order = $OrderRules[$rule]
-
         Write-Output (New-Object PSObject -Property @{
-                Include = $include;
-                Tag     = $tag;                        
-                Order   = $order;
-                Path    = $_.Directory.FullName;
-                Sources = $sources;
+                Tag      = $tag;                        
+                Path     = $_.Directory.FullName;
+                Sources  = $sources;
+                Priority = $null;
+                Include  = $null;
             })
     }
 }
@@ -89,31 +78,47 @@ $ProgressPreference = "SilentlyContinue"
 
 $rootPath = (Join-Path $PSScriptRoot "\images")
 
-# Specify ordering for each tag, used to ensure base images are build first. This is the most simple approach I could come up with for handling dependencies between images. If needed in the future, look into something like https://en.wikipedia.org/wiki/Topological_sorting.
-$defaultOrder = 1000
-$ordering = New-Object System.Collections.Specialized.OrderedDictionary
-$ordering.Add("^sitecore-base:(.*)$", 100)
-$ordering.Add("^sitecore-openjdk:(.*)$", 200)
-$ordering.Add("^(.*)$", $defaultOrder)
+# Specify priority for each tag, used to ensure base images are build first. This is the most simple approach I could come up with for handling dependencies between images. If needed in the future, look into something like https://en.wikipedia.org/wiki/Topological_sorting.
+$defaultPriority = 1000
+$priorities = New-Object System.Collections.Specialized.OrderedDictionary
+$priorities.Add("^sitecore-base:(.*)$", 100)
+$priorities.Add("^sitecore-openjdk:(.*)$", 200)
+$priorities.Add("^(.*)$", $defaultPriority)
     
 # Find out what to build
-$unsortedSpecs = Find-BuildSpecifications -Path $rootPath -InstallSourcePath $InstallSourcePath -Tags $Tags -OrderRules $ordering
+$unsortedSpecs = Find-BuildSpecifications -Path $rootPath -InstallSourcePath $InstallSourcePath
 
-# Apply build order
+# Update specs, include or not
+$unsortedSpecs | ForEach-Object {
+    $spec = $_
+    $spec.Include = ($Tags | ForEach-Object { $spec.Tag -like $_ }) -contains $true
+}
+
+# Update specs, set priority according to rules
+$unsortedSpecs | ForEach-Object {
+    $spec = $_
+    $rule = $priorities.Keys | Where-Object { $spec.Tag -match $_ } | Select-Object -First 1
+    
+    $spec.Priority = $priorities[$rule]
+}
+
+# Reorder specs so priorities are first
 $specs = @()
 
-$unsortedSpecs | Where-Object { $_.Order -lt $defaultOrder } | Sort-Object -Property Order | ForEach-Object {
+$unsortedSpecs | Where-Object { $_.Priority -lt $defaultPriority } | Sort-Object -Property Priority | ForEach-Object {
     $specs += $_
 }
 
-$unsortedSpecs | Where-Object { $_.Order -eq $defaultOrder } | ForEach-Object {
+$unsortedSpecs | Where-Object { $_.Priority -eq $defaultPriority } | ForEach-Object {
     $specs += $_
 }
 
 # Print what was found
-$specs | Select-Object -Property Tag, Include, Order, Path | Format-Table
+$specs | Select-Object -Property Tag, Include, Priority, Path | Format-Table
 
 Write-Host "### Build specifications loaded..." -ForegroundColor Green
+
+return
 
 # Find and pull latest external images
 Find-BaseImages -Path $rootPath | Select-Object -Unique | ForEach-Object {
