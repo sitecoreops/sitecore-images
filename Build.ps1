@@ -116,16 +116,16 @@ $specs | Select-Object -Property Tag, Include, Order, Path | Format-Table
 Write-Host "### Build specifications loaded..." -ForegroundColor Green
 
 # Find and pull latest external images
-# Find-BaseImages -Path $rootPath | Select-Object -Unique | ForEach-Object {
-#     $tag = $_
+Find-BaseImages -Path $rootPath | Select-Object -Unique | ForEach-Object {
+    $tag = $_
 
-#     if ($tag -notmatch "sitecore")
-#     {
-#         docker pull $tag
+    if ($tag -notmatch "sitecore")
+    {
+        docker pull $tag
 
-#         $LASTEXITCODE -ne 0 | Where-Object { $_ } | ForEach-Object { throw "Failed." }
-#     }
-# }
+        $LASTEXITCODE -ne 0 | Where-Object { $_ } | ForEach-Object { throw "Failed." }
+    }
+}
 
 Write-Host "### External images is up to date..." -ForegroundColor Green
 
