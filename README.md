@@ -1,11 +1,14 @@
 # Repository of Sitecore Docker base images
 
-Build your own Docker images out of every released Sitecore version since 8.2 rev. 170407 (Update 3) - the first version that officially supported Windows Server 2016. You can use this repository, preferably from a fork so you are in control of updates, from you own build server and have it build and push images to your own private Docker repository.
+Build your own Docker images out of every released Sitecore version since 8.2 rev. 170407 (Update 3) - the first version that officially supported Windows Server 2016. You can use this repository (preferably from a fork so you are in control of updates) from you own build server and have it build and push images to your private Docker repository.
 
 There are some more background and details in this post: [https://invokecommand.net/posts/automatically-build-and-update-base-images](https://invokecommand.net/posts/automatically-build-and-update-base-images).
 
 ## Updates
 
+- [Added] Sitecore 9.0.1 on windowsservercore-1803.
+- [Added] Sitecore 9.0.1 Solr on nanoserver-1803.
+- [Added] Sitecore 9.0.1 SQL Developer variant on windowsservercore-1803.
 - [Added] Sitecore 9.0.1 Solr variant on windowsservercore-1709.
 - [Added] Sitecore 9.0.1 SQL Developer variant on windowsservercore-1709.
 - [Breaking] Restructured versions and tags to support multiple Windows channels (ltsc2016, 1709, 1803 etc), there are now more repositories per version, one for each topology/role.
@@ -52,17 +55,21 @@ Configure your build server to:
 
 ...
 
-### Differences between 1709 and 1803
+## Differences between 1709 and 1803
 
-...
+### Startup improvements
 
-docker-compose up (sql,solr,cm), first request to /sitecore/login:
+Measurements of starting up a minimal compose file with sql, solr and a cm service with `docker-compose up` and warmup is the to of the first request to `/sitecore/login`:
 
-1709: up: 38 sec, warmup: 45 sec
-1803: up: 26 sec, warmup: 43 sec
+| OS            | Up (sec) | Warmup (sec) |
+| ------------- | --------:| ------------:|
+| 1709          | 38       | 45           |
+| 1803          | **26**   | **42**       |
 
-1709 vs 1803 image sizes:
+### Image sizes
 
-sql       : 14.00 GB -> 6.95 GB
-solr      :  1.50 GB ->  672 MB
-xm1 cm/cd :  9.69 GB -> 6.13 GB
+| Image    | 1709     | 1803        |
+| ---------| --------:| -----------:|
+| sql      | 14.00 GB | **6.95 GB** |
+| solr     | 1.50 GB  | **672 MB**  |
+| sitecore | 9.69 GB  | **6.13 GB** |
