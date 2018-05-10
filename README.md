@@ -1,6 +1,6 @@
 # Repository of Sitecore Docker base images
 
-Build your own Docker images out of every released Sitecore version since 8.2 rev. 170407 (Update 3) - the first version that officially supported Windows Server 2016. You can use this repository, preferably from a fork so you are in control of updates, on you own build server and have it build and push images to your own private Docker repository.
+Build your own Docker images out of every released Sitecore version since 8.2 rev. 170407 (Update 3) - the first version that officially supported Windows Server 2016. You can use this repository, preferably from a fork so you are in control of updates, from you own build server and have it build and push images to your own private Docker repository.
 
 There are some more background and details in this post: [https://invokecommand.net/posts/automatically-build-and-update-base-images](https://invokecommand.net/posts/automatically-build-and-update-base-images).
 
@@ -47,3 +47,20 @@ Configure your build server to:
     -Tags "*" ` # optional (default "*"), set to for example "sitecore*:9.0*" to only build 9.0.x images.
     -PushMode "WhenChanged" # optional (default "WhenChanged"), can also be "Never" or "Always".
 ````
+
+## Tagging explained: Sitecore versions, topology and Windows versions
+
+...
+
+### Differences between 1709 and 1803
+
+...
+
+docker-compose up (sql,solr,cm), first request to /sitecore/login:
+
+1709: up: 38 sec, warmup: 45 sec
+1803: up: 26 sec, warmup: 43 sec
+
+sql       : 14.00 GB -> 6.95 GB
+solr      :  1.50 GB ->  672 MB
+xm1 cm/cd :  9.69 GB -> 6.13 GB

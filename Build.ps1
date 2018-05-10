@@ -124,6 +124,8 @@ Find-BaseImages -Path $rootPath | Select-Object -Unique | ForEach-Object {
         docker pull $tag
 
         $LASTEXITCODE -ne 0 | Where-Object { $_ } | ForEach-Object { throw "Failed." }
+
+        Write-Host ("### External image '{0}' is latest." -f $tag)
     }
 }
 
