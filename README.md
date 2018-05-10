@@ -23,7 +23,7 @@ There are some more background and details in this post: [https://invokecommand.
 
 ## Prerequisites
 
-- A **private** Docker repository. Any will do, but the easiest is to sign-up for a private plan on [https://hub.docker.com](https://hub.docker.com), you need at least the "Small" plan at $12/mo.
+- A **private** Docker repository. Any will do, but the easiest is to use a [Azure Container Registry](https://azure.microsoft.com/en-us/services/container-registry/) or to sign-up for a private plan on [https://hub.docker.com](https://hub.docker.com), you need at least the "Small" plan at $12/mo.
 - A file share that your build agents can reach, where you have placed zip files downloaded from [https://dev.sitecore.net/](https://dev.sitecore.net/) **and** your license.xml.
 - Some kind of build server for example TeamCity, with agents that runs:
   - Windows 10 or Windows Server 2016 that is up to date and on latest build.
@@ -47,7 +47,7 @@ Configure your build server to:
 . (Join-Path $PSScriptRoot "Build.ps1") `
     -InstallSourcePath "PATH TO WHERE YOU KEEP ALL SITECORE ZIP FILES AND LICENSE.XML" `
     -Registry "YOUR REGISTRY NAME" ` # On Docker Hub it's your username or organization, else it's the DNS to your private registry.
-    -Tags "*" ` # optional (default "*"), set to for example "sitecore*:9.0*" to only build 9.0.x images.
+    -Tags "*" ` # optional (default "*"), set to for example "sitecore-openjdk:*-1803", "sitecore-*:9.0.1*1803" to only build 9.0.x images on 1803.
     -PushMode "WhenChanged" # optional (default "WhenChanged"), can also be "Never" or "Always".
 ````
 

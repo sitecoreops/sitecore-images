@@ -95,20 +95,14 @@ $unsortedSpecs | ForEach-Object {
     $spec.Priority = $priorities[$rule]
 }
 
-# Reorder specs so priorities goes first
-$specs = @()
-
-$unsortedSpecs | Where-Object { $_.Priority -lt $defaultPriority } | Sort-Object -Property Priority | ForEach-Object {
-    $specs += $_
-}
-
-$unsortedSpecs | Where-Object { $_.Priority -eq $defaultPriority } | ForEach-Object {
-    $specs += $_
-}
+# Reorder specs, priorities goes first
+$specs = [System.Collections.ArrayList]@()
+$specs.AddRange(($unsortedSpecs | Where-Object { $_.Priority -lt $defaultPriority } | Sort-Object -Property Priority))
+$specs.AddRange(($unsortedSpecs | Where-Object { $_.Priority -eq $defaultPriority }))
 
 # Print results
 $specs | Select-Object -Property Tag, Include, Priority, Base | Format-Table
-return
+
 Write-Host "### Build specifications loaded..." -ForegroundColor Green
 
 # Pull latest external images
