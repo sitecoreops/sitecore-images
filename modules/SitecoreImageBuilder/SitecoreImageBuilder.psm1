@@ -238,10 +238,10 @@ function Get-CurrentImagesMarkdown
         [string]$Path
     )
     
-    Write-Output "| Version | Repository | OS  | Tag |"
-    Write-Output "| ------- | ---------- | --- | --- |"
+    Write-Output "| Version | Repository | OS  | OS Version | Tag |"
+    Write-Output "| ------- | ---------- | --- | -----------| --- |"
 
     Get-CurrentImages -Path $Path | Sort-Object -Property Version, "OS Version", Repository -Descending | ForEach-Object {
-        Write-Output ("| {0} | {1} | {2} | [{3}]({4}) |" -f $_.Version, $_.Repository, ("$($_.OS)-$($_."OS Version")"), $_.Tag, $_.Path )
+        Write-Output ("| {0} | {1} | {2} | {3 } | [{4}]({5}) |" -f $_.Version, $_.Repository, $_.OS, $_."OS Version", $_.Tag, $_.Path )
     }
 }
