@@ -49,6 +49,19 @@ There are some more background and details in this post: [https://invokecommand.
 | 8 | sitecore-openjdk | nanoserver | 1803 | `sitecore-openjdk:8-nanoserver-1803` [Dockerfile](images/sitecore-openjdk/nanoserver-1803/Dockerfile) |
 | 8 | sitecore-openjdk | nanoserver | 1709 | `sitecore-openjdk:8-nanoserver-1709` [Dockerfile](images/sitecore-openjdk/nanoserver-1709/Dockerfile) |
 
+### Tags and Windows versions
+
+This repository now supports multiple Windows versions and support channels ie. "ltsc2016", "1709" and "1803". Read more about [Windows Container Version Compatibility](https://docs.microsoft.com/en-us/virtualization/windowscontainers/deploy-containers/version-compatibility).
+
+Here is the convention used when tagging images:
+
+```text
+ registry.example.com/sitecore-xm1-cm:9.0.171219-windowsservercore-1709
+ \__________________/ \_____________/ \________/ \____________________/
+           |                 |             |               |
+   registry/org/user    repository    sc version       os version
+```
+
 ## How to use
 
 ### Prerequisites
@@ -82,19 +95,6 @@ SitecoreImageBuilder\Invoke-Build `
     -Tags "*" ` # optional (default "*"), set to for example "sitecore-openjdk:*-1803", "sitecore-*:9.0.1*1803" to only build 9.0.x images on 1803.
     -PushMode "WhenChanged" # optional (default "WhenChanged"), can also be "Never" or "Always".
 
-```
-
-## Tags and Windows versions
-
-This repository now supports multiple Windows versions and support channels ie. "ltsc2016", "1709" and "1803". Read more about [Windows Container Version Compatibility](https://docs.microsoft.com/en-us/virtualization/windowscontainers/deploy-containers/version-compatibility).
-
-Here is the convention used when tagging images:
-
-```text
- registry.example.com/sitecore-xm1-cm:9.0.171219-windowsservercore-1709
- \__________________/ \_____________/ \________/ \____________________/
-           |                 |             |               |
-   registry/org/user    repository    sc version       os version
 ```
 
 ## Improvements in 1803
