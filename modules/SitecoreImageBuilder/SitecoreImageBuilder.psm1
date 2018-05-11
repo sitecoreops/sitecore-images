@@ -223,7 +223,7 @@ function Get-CurrentImages
                     OS           = $os;
                     "OS Version" = $osVersion;
                     Tag          = $spec.Tag;
-                    Path         = "images{0}/Dockerfile" -f $spec.Path.Replace($Path, "").Replace("\", "/");
+                    Path         = "images{0}/Dockerfile" -f $spec.Path.Replace($Path, "").Replace("\", "/").Replace(" ", "%20");
                 })
         }
     }
@@ -238,10 +238,10 @@ function Get-CurrentImagesMarkdown
         [string]$Path
     )
     
-    Write-Host "| Version | Repository | OS  | OS Version | Tag |"
-    Write-Host "| ------- | ---------- | --- | -----------| --- |"
+    Write-Output "| Version | Repository | OS  | OS Version | Tag |"
+    Write-Output "| ------- | ---------- | --- | -----------| --- |"
 
     Get-CurrentImages -Path $Path | Sort-Object -Property Version, "OS Version", Repository | ForEach-Object {
-        Write-Host ("| {0} | {1} | {2} | {3 } | [{4}]({5}) |" -f $_.Version, $_.Repository, $_.OS, $_."OS Version", $_.Tag, $_.Path )
+        Write-Output ("| {0} | {1} | {2} | {3 } | [{4}]({5}) |" -f $_.Version, $_.Repository, $_.OS, $_."OS Version", $_.Tag, $_.Path )
     }
 }
