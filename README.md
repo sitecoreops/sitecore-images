@@ -53,7 +53,7 @@ Configure your build server to:
 
 ## Tags and Windows versions
 
-This repository now supports multiple Windows versions and support channels ie. "ltsc2016", "1709" and "1803". Read more about  [Windows Container Version Compatibility](https://docs.microsoft.com/en-us/virtualization/windowscontainers/deploy-containers/version-compatibility).
+This repository now supports multiple Windows versions and support channels ie. "ltsc2016", "1709" and "1803". Read more about [Windows Container Version Compatibility](https://docs.microsoft.com/en-us/virtualization/windowscontainers/deploy-containers/version-compatibility).
 
 Here is the convention used when tagging images:
 
@@ -64,16 +64,20 @@ Here is the convention used when tagging images:
    registry/org/user   topology+role  sc version       os version
 ```
 
-## Differences between 1709 and 1803
+## Improvements in 1803
 
-### Startup improvements
+Besides the ability to publish ports on localhost and better NAT throughput, startup time has improved and image sizes are also reduced quite a lot. Read more about [Network start-up and performance improvements in Windows 10 April 2018 Update and Windows Server, version 1803](https://blogs.technet.microsoft.com/networking/2018/04/27/network-start-up-and-performance-improvements-in-windows-10-spring-creators-update-and-windows-server-version-1803/).
 
-Measurements of starting up a minimal compose file with sql, solr and a cm service with `docker-compose up` and warmup is the to of the first request to `/sitecore/login`:
+### Startup
+
+Measurements of starting up a minimal compose file with sql, solr and a cm service with `docker-compose up` and warmup is time the first request to `/sitecore/login` takes:
 
 | OS            | Up (sec) | Warmup (sec) |
 | ------------- | --------:| ------------:|
 | 1709          | 38       | 45           |
 | 1803          | **26**   | **42**       |
+
+> Tested on Windows 10 1803 with a gen. 4 i7-4790 CPU @ 3.60 GHz and a Samsung 850 EVO SSD disk.
 
 ### Image sizes
 
