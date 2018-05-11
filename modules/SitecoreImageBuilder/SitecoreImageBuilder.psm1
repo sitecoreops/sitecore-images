@@ -63,7 +63,7 @@ function Invoke-Build
     $specs.AddRange(($unsortedSpecs | Where-Object { $_.Priority -eq $defaultPriority }))
 
     # Print results
-    $specs | Select-Object -Property Tag, Include, Priority, Sources | Format-Table
+    $specs | Select-Object -Property Tag, Include, Priority, Base | Format-Table
 
     # Abort if -WhatIf was used
     if ($WhatIfPreference)
