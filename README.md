@@ -21,6 +21,34 @@ There are some more background and details in this post: [https://invokecommand.
 - [Changed] all Sitecore 9 images now default has connection strings matching the new specialized SQL Server images.
 - [Added] XM1 CM and CD role images for Sitecore 9.
 
+## Current images
+
+| Version | Repository | OS  | OS Version | Tag |
+| ------- | ---------- | --- | -----------| --- |
+| 8 | sitecore-openjdk | nanoserver | 1709 | [sitecore-openjdk:8-nanoserver-1709](images/sitecore-openjdk/nanoserver-1709/Dockerfile) |
+| 8 | sitecore-openjdk | nanoserver | 1803 | [sitecore-openjdk:8-nanoserver-1803](images/sitecore-openjdk/nanoserver-1803/Dockerfile) |
+| 8.2.170407 | sitecore | windowsservercore | 1709 | [sitecore:8.2.170407-windowsservercore-1709](images/8.2 rev. 170407/windowsservercore-1709/Dockerfile) |
+| 8.2.170614 | sitecore | windowsservercore | 1709 | [sitecore:8.2.170614-windowsservercore-1709](images/8.2 rev. 170614/windowsservercore-1709/Dockerfile) |
+| 8.2.170728 | sitecore | windowsservercore | 1709 | [sitecore:8.2.170728-windowsservercore-1709](images/8.2 rev. 170728/windowsservercore-1709/Dockerfile) |
+| 8.2.171121 | sitecore | windowsservercore | 1709 | [sitecore:8.2.171121-windowsservercore-1709](images/8.2 rev. 171121/windowsservercore-1709/Dockerfile) |
+| 8.2.180406 | sitecore | windowsservercore | 1709 | [sitecore:8.2.180406-windowsservercore-1709](images/8.2 rev. 180406/windowsservercore-1709/Dockerfile) |
+| 9.0.171002 | sitecore-base | windowsservercore | 1709 | [sitecore-base:9.0.171002-windowsservercore-1709](images/9.0.0 rev. 171002/windowsservercore-1709/sitecore-base/Dockerfile) |
+| 9.0.171002 | sitecore-xm1-cd | windowsservercore | 1709 | [sitecore-xm1-cd:9.0.171002-windowsservercore-1709](images/9.0.0 rev. 171002/windowsservercore-1709/sitecore-xm1-cd/Dockerfile) |
+| 9.0.171002 | sitecore-xm1-cm | windowsservercore | 1709 | [sitecore-xm1-cm:9.0.171002-windowsservercore-1709](images/9.0.0 rev. 171002/windowsservercore-1709/sitecore-xm1-cm/Dockerfile) |
+| 9.0.171002 | sitecore-sqldev | windowsservercore | ltsc2016 | [sitecore-sqldev:9.0.171002-windowsservercore-ltsc2016](images/9.0.0 rev. 171002/windowsservercore-ltsc2016/sitecore-sqldev/Dockerfile) |
+| 9.0.171219 | sitecore-base | windowsservercore | 1709 | [sitecore-base:9.0.171219-windowsservercore-1709](images/9.0.1 rev. 171219/windowsservercore-1709/sitecore-base/Dockerfile) |
+| 9.0.171219 | sitecore-solr | nanoserver | 1709 | [sitecore-solr:9.0.171219-nanoserver-1709](images/9.0.1 rev. 171219/nanoserver-1709/sitecore-solr/Dockerfile) |
+| 9.0.171219 | sitecore-sqldev | windowsservercore | 1709 | [sitecore-sqldev:9.0.171219-windowsservercore-1709](images/9.0.1 rev. 171219/windowsservercore-1709/sitecore-sqldev/Dockerfile) |
+| 9.0.171219 | sitecore-xm1-cd | windowsservercore | 1709 | [sitecore-xm1-cd:9.0.171219-windowsservercore-1709](images/9.0.1 rev. 171219/windowsservercore-1709/sitecore-xm1-cd/Dockerfile) |
+| 9.0.171219 | sitecore-xm1-cm | windowsservercore | 1709 | [sitecore-xm1-cm:9.0.171219-windowsservercore-1709](images/9.0.1 rev. 171219/windowsservercore-1709/sitecore-xm1-cm/Dockerfile) |
+| 9.0.171219 | sitecore-base | windowsservercore | 1803 | [sitecore-base:9.0.171219-windowsservercore-1803](images/9.0.1 rev. 171219/windowsservercore-1803/sitecore-base/Dockerfile) |
+| 9.0.171219 | sitecore-solr | nanoserver | 1803 | [sitecore-solr:9.0.171219-nanoserver-1803](images/9.0.1 rev. 171219/nanoserver-1803/sitecore-solr/Dockerfile) |
+| 9.0.171219 | sitecore-sqldev | windowsservercore | 1803 | [sitecore-sqldev:9.0.171219-windowsservercore-1803](images/9.0.1 rev. 171219/windowsservercore-1803/sitecore-sqldev/Dockerfile) |
+| 9.0.171219 | sitecore-xm1-cd | windowsservercore | 1803 | [sitecore-xm1-cd:9.0.171219-windowsservercore-1803](images/9.0.1 rev. 171219/windowsservercore-1803/sitecore-xm1-cd/Dockerfile) |
+| 9.0.171219 | sitecore-xm1-cm | windowsservercore | 1803 | [sitecore-xm1-cm:9.0.171219-windowsservercore-1803](images/9.0.1 rev. 171219/windowsservercore-1803/sitecore-xm1-cm/Dockerfile) |
+| 9.0.171219 | sitecore-solr | nanoserver | ltsc2016 | [sitecore-solr:9.0.171219-nanoserver-ltsc2016](images/9.0.1 rev. 171219/nanoserver-ltsc2016/sitecore-solr/Dockerfile) |
+| 9.0.171219 | sitecore-sqldev | windowsservercore | ltsc2016 | [sitecore-sqldev:9.0.171219-windowsservercore-ltsc2016](images/9.0.1 rev. 171219/windowsservercore-ltsc2016/sitecore-sqldev/Dockerfile) |
+
 ## Prerequisites
 
 - A **private** Docker repository. Any will do, but the easiest is to use a [Azure Container Registry](https://azure.microsoft.com/en-us/services/container-registry/) or to sign-up for a private plan on [https://hub.docker.com](https://hub.docker.com), you need at least the "Small" plan at $12/mo.
