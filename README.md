@@ -49,7 +49,9 @@ There are some more background and details in this post: [https://invokecommand.
 | 9.0.171219 | sitecore-solr | nanoserver | ltsc2016 | [sitecore-solr:9.0.171219-nanoserver-ltsc2016](images/9.0.1%20rev.%20171219/nanoserver-ltsc2016/sitecore-solr/Dockerfile) |
 | 9.0.171219 | sitecore-sqldev | windowsservercore | ltsc2016 | [sitecore-sqldev:9.0.171219-windowsservercore-ltsc2016](images/9.0.1%20rev.%20171219/windowsservercore-ltsc2016/sitecore-sqldev/Dockerfile) |
 
-## Prerequisites
+## How to use
+
+### Prerequisites
 
 - A **private** Docker repository. Any will do, but the easiest is to use a [Azure Container Registry](https://azure.microsoft.com/en-us/services/container-registry/) or to sign-up for a private plan on [https://hub.docker.com](https://hub.docker.com), you need at least the "Small" plan at $12/mo.
 - A file share that your build agents can reach, where you have placed zip files downloaded from [https://dev.sitecore.net/](https://dev.sitecore.net/) **and** your license.xml.
@@ -58,26 +60,29 @@ There are some more background and details in this post: [https://invokecommand.
   - Hyper-V and Containers Windows features installed.
   - Latest stable Docker engine and cli.
 
-## How to use
-
-Configure your build server to:
+### Configure your build server
 
 1. Trigger a build on changes to this git repository - to get new versions.
 1. Trigger once a week - to get base images updated when Microsoft releases patched images.
 
 ./Build.ps1 should be called like this:
 
-````PowerShell
+```PowerShell
 # Login
 "YOUR DOCKER REPOSITORY PASSWORD" | docker login --username "YOUR DOCKER REPOSITORY USERNAME" --password-stdin
 
+# Load module
+Import-Module (Join-Path $PSScriptRoot ".\modules\SitecoreImageBuilder") -Force
+
 # Build and push
-. (Join-Path $PSScriptRoot "Build.ps1") `
+SitecoreImageBuilder\Invoke-Build `
+    -Path (Join-Path $PSScriptRoot "\images") `
     -InstallSourcePath "PATH TO WHERE YOU KEEP ALL SITECORE ZIP FILES AND LICENSE.XML" `
     -Registry "YOUR REGISTRY NAME" ` # On Docker Hub it's your username or organization, else it's the DNS to your private registry.
     -Tags "*" ` # optional (default "*"), set to for example "sitecore-openjdk:*-1803", "sitecore-*:9.0.1*1803" to only build 9.0.x images on 1803.
     -PushMode "WhenChanged" # optional (default "WhenChanged"), can also be "Never" or "Always".
-````
+
+```
 
 ## Tags and Windows versions
 
@@ -89,7 +94,7 @@ Here is the convention used when tagging images:
  registry.example.com/sitecore-xm1-cm:9.0.171219-windowsservercore-1709
  \__________________/ \_____________/ \________/ \____________________/
            |                 |             |               |
-   registry/org/user   topology+role  sc version       os version
+   registry/org/user    repository    sc version       os version
 ```
 
 ## Improvements in 1803
