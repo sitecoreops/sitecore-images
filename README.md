@@ -12,7 +12,7 @@ There are some more background and details in this post: [https://invokecommand.
 - [Added] Sitecore 9.0.1 Solr variant on windowsservercore-1709.
 - [Added] Sitecore 9.0.1 SQL Developer variant on windowsservercore-1709.
 - [Breaking] Restructured versions and tags to support multiple Windows channels (ltsc2016, 1709, 1803 etc), there are now more repositories per version, one for each topology/role. See [Tags and Windows versions](#tags-and-windows-versions).
-- [Breaking] Decoupled image tags from structure by specifying full tag and version in "build.json".
+- [Breaking] Decoupled image tags from structure by specifying full tag in "build.json".
 - [Added] Sitecore 8.2 Update 7.
 - [Fixed] Added UrlRewrite outbound rule to handle Sitecore redirect after login when container is running on another port than 80 (possible in Windows 10 1803).
 - [Fixed] Solr build errors regarding downloads from github (TLS 1.2 now used).
