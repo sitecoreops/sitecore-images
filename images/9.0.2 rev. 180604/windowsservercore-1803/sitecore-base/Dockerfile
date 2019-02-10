@@ -19,7 +19,7 @@ RUN $env:INSTALL_TEMP = 'C:\\install'; `
     Start-Process (Join-Path $env:INSTALL_TEMP '\\VC_redist.x64.exe') -ArgumentList '/install', '/passive', '/norestart' -NoNewWindow -Wait; `
     Install-PackageProvider -Name NuGet -Force | Out-Null; `
     Register-PSRepository -Name SitecoreGallery -SourceLocation https://sitecore.myget.org/F/sc-powershell/api/v2; `
-    Install-Module SitecoreInstallFramework -RequiredVersion 2.0.0 -Force; `
+    Install-Module SitecoreInstallFramework -RequiredVersion 1.2.1 -Force; `
     Set-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Services\Dnscache\Parameters' -Name ServerPriorityTimeLimit -Value 0 -Type DWord; `
     setx /M PATH $($env:PATH + ';C:\Sitecore\Scripts'); `
     Remove-Website -Name 'Default Web Site'; `
