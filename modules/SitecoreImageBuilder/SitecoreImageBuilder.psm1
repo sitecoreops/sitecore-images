@@ -28,7 +28,8 @@ function Invoke-Build
     $defaultPriority = 1000
     $priorities = New-Object System.Collections.Specialized.OrderedDictionary
     $priorities.Add("^sitecore-base:(.*)$", 100)
-    $priorities.Add("^sitecore-openjdk:(.*)$", 200)
+    $priorities.Add("^sitecore-xp-xconnect:(.*)$", 110)
+    $priorities.Add("^sitecore-openjdk:(.*)$", 120)
     $priorities.Add("^(.*)$", $defaultPriority)
     
     # Find out what to build
