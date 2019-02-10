@@ -1,5 +1,5 @@
 # escape=`
-FROM mcr.microsoft.com/dotnet/framework/aspnet:4.7.2-windowsservercore-1803 as download
+FROM mcr.microsoft.com/windows/servercore:1803 as download
 
 SHELL ["powershell", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';"]
 
@@ -8,7 +8,7 @@ ADD https://download.microsoft.com/download/1/2/8/128E2E22-C1B9-44A4-BE2A-5859ED
 ADD https://aka.ms/vs/15/release/VC_redist.x64.exe C:\\install\\VC_redist.x64.exe
 
 # Runtime
-FROM mcr.microsoft.com/dotnet/framework/aspnet:4.7.2-windowsservercore-ltsc2019 as final
+FROM mcr.microsoft.com/dotnet/framework/aspnet:4.7.2-windowsservercore-1803 as final
 
 COPY --from=download /install /install
 
