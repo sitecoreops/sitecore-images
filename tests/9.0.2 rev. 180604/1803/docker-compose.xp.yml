@@ -22,7 +22,25 @@ services:
     image: sitecore-xp-xconnect:9.0.180604-windowsservercore-1803
     volumes:
       - .\data\xconnect:C:\inetpub\xconnect\App_Data\logs
-    mem_limit: 1GB
+    mem_limit: 500MB
+    links:
+      - sql
+      - solr
+
+  xconnect-automationengine:
+    image: sitecore-xp-xconnect-automationengine:9.0.180604-windowsservercore-1803
+    volumes:
+      - .\data\xconnect-automationengine:C:\inetpub\xconnect\App_Data\jobs\continuous\AutomationEngine\App_Data\logs
+    mem_limit: 500MB
+    links:
+      - sql
+      - xconnect
+
+  xconnect-indexworker:
+    image: sitecore-xp-xconnect-indexworker:9.0.180604-windowsservercore-1803
+    volumes:
+      - .\data\xconnect-indexworker:C:\inetpub\xconnect\App_Data\jobs\continuous\IndexWorker\App_Data\logs
+    mem_limit: 500MB
     links:
       - sql
       - solr
@@ -36,3 +54,4 @@ services:
     links:
       - sql
       - solr
+      - xconnect

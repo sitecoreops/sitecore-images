@@ -45,7 +45,7 @@ RUN $env:SITENAME = 'xconnect'; `
     -LicenseFile (Join-Path $env:INSTALL_TEMP '\\license.xml') `
     -Sitename $env:SITENAME `
     -SolrUrl $env:SOLR_URL `
-    -SolrCorePrefix $env:SITENAME `
+    -SolrCorePrefix $env:SQL_DB_PREFIX `
     -XConnectCert $env:XCONNECT_CERT_NAME `
     -SSLCert $env:XCONNECT_SSL_NAME `
     -SqlServer $env:SQL_HOST `
