@@ -37,7 +37,7 @@ Get-ChildItem -Path $DataPath -Filter "*.mdf" | ForEach-Object {
 Write-Host "### Preparing Sitecore databases..."
 
 # See http://jonnekats.nl/2017/sql-connection-issue-xconnect/
-Invoke-Sqlcmd -Query ("UPDATE [{0}_Xdb.Collection.ShardMapManager].[__ShardManagement].[ShardsGlobal] SET ServerName = '{1}'" -f $env:DB_PREFIX, $env:HOST_NAME)
+Invoke-Sqlcmd -Query ("UPDATE [{0}_Xdb.Collection.ShardMapManager].[__ShardManagement].[ShardsGlobal] SET ServerName = '{1}'" -f $env:DB_PREFIX, "sql")
 Invoke-Sqlcmd -Query ("EXEC sp_MSforeachdb 'IF charindex(''{0}'', ''?'' ) = 1 BEGIN EXEC [?]..sp_changedbowner ''sa'' END'" -f $env:DB_PREFIX)
 
 Write-Host "### Sitecore databases ready!"

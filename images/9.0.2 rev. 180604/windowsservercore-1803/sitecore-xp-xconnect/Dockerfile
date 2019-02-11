@@ -32,6 +32,7 @@ RUN $env:SITENAME = 'xconnect'; `
     $env:SQL_ADMIN_USER = 'sa'; `
     $env:SQL_ADMIN_PASSWORD = 'HASH-epsom-sunset-cost7!'; `
     $env:SQL_HOST='sql'; `
+    $env:SQL_DB_PREFIX='sc'; `
     $env:SOLR_URL='http://solr:8983/solr'; `
     $env:CERT_PATH = 'C:\\certificates'; `
     $env:CERT_SECRET = 'Sp1JJvsrkXtWW9fOSFUh'; `
@@ -48,7 +49,7 @@ RUN $env:SITENAME = 'xconnect'; `
     -XConnectCert $env:XCONNECT_CERT_NAME `
     -SSLCert $env:XCONNECT_SSL_NAME `
     -SqlServer $env:SQL_HOST `
-    -SqlDbPrefix $env:SITENAME `
+    -SqlDbPrefix $env:SQL_DB_PREFIX `
     -SqlAdminUser $env:SQL_ADMIN_USER -SqlAdminPassword $env:SQL_ADMIN_PASSWORD `
     -SqlCollectionUser $env:SQL_ADMIN_USER -SqlCollectionPassword $env:SQL_ADMIN_PASSWORD `
     -SqlMessagingUser $env:SQL_ADMIN_USER -SqlMessagingPassword $env:SQL_ADMIN_PASSWORD `
