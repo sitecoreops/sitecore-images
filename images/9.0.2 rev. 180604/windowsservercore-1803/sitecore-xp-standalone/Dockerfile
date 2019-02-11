@@ -36,8 +36,11 @@ RUN $env:SITENAME = 'sc'; `
     $env:CERT_PATH = 'C:\\certificates'; `
     $env:CERT_SECRET = 'Sp1JJvsrkXtWW9fOSFUh'; `
     $env:XCONNECT_CERT_NAME = 'xconnect-client'; `
-    $env:XCONNECT_URL = 'http://xconnect'; `
-    Import-PfxCertificate -FilePath (Join-Path $env:CERT_PATH '\\xconnect-client.pfx') -CertStoreLocation 'cert:\localmachine\root' -Password (ConvertTo-SecureString -String $env:CERT_SECRET -Force -AsPlainText); `
+    $env:XCONNECT_SSL_NAME = 'xconnect'; `
+    $env:XCONNECT_URL = 'https://xconnect'; `
+    Import-PfxCertificate -FilePath (Join-Path $env:CERT_PATH ('\\{0}.pfx' -f $env:XCONNECT_CERT_NAME)) -CertStoreLocation 'cert:\localmachine\root' -Password (ConvertTo-SecureString -String $env:CERT_SECRET -Force -AsPlainText); `
+    Import-PfxCertificate -FilePath (Join-Path $env:CERT_PATH ('\\{0}.pfx' -f $env:XCONNECT_CERT_NAME)) -CertStoreLocation 'cert:\localmachine\my' -Password (ConvertTo-SecureString -String $env:CERT_SECRET -Force -AsPlainText); `
+    Import-PfxCertificate -FilePath (Join-Path $env:CERT_PATH ('\\{0}.pfx' -f $env:XCONNECT_SSL_NAME)) -CertStoreLocation 'cert:\localmachine\root' -Password (ConvertTo-SecureString -String $env:CERT_SECRET -Force -AsPlainText); `
     Install-SitecoreConfiguration -Path (Join-Path $env:INSTALL_TEMP '\\sitecore.json') -Package (Join-Path $env:INSTALL_TEMP '\\sitecore.zip') `
     -LicenseFile (Join-Path $env:INSTALL_TEMP '\\license.xml') `
     -Sitename $env:SITENAME `

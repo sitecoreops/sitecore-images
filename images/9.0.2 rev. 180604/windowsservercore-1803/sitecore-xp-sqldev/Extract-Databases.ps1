@@ -15,7 +15,7 @@ Get-ChildItem -Path $Path -Filter "*(OnPrem)*single*.zip" | ForEach-Object {
         $stream = New-Object IO.FileStream($zipPath, [IO.FileMode]::Open)
         $zip = New-Object IO.Compression.ZipArchive($stream, [IO.Compression.ZipArchiveMode]::Read)
 
-        ($zip.Entries | Where-Object { $_.FullName -like "Sitecore.*.dacpac" -and !($_.Name -like "*azure*" -or $_.Name -like "*Xdb.Collection*") }) | Foreach-Object { 
+        ($zip.Entries | Where-Object { $_.FullName -like "Sitecore.*.dacpac" -and $_.Name -notlike "*Xdb.Collection*.dacpac" }) | Foreach-Object { 
             [IO.Compression.ZipFileExtensions]::ExtractToFile($_, (Join-Path $Path $_.Name), $true)
         }
     }

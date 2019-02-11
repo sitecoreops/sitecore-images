@@ -23,8 +23,6 @@ services:
     volumes:
       - .\data\xconnect:C:\inetpub\xconnect\App_Data\logs
     mem_limit: 1GB
-    ports:
-      - "44004:80"
     links:
       - sql
       - solr

@@ -36,13 +36,17 @@ RUN $env:SITENAME = 'xconnect'; `
     $env:CERT_PATH = 'C:\\certificates'; `
     $env:CERT_SECRET = 'Sp1JJvsrkXtWW9fOSFUh'; `
     $env:XCONNECT_CERT_NAME = 'xconnect-client'; `
-    Import-PfxCertificate -FilePath (Join-Path $env:CERT_PATH '\\xconnect-client.pfx') -CertStoreLocation 'cert:\localmachine\root' -Password (ConvertTo-SecureString -String $env:CERT_SECRET -Force -AsPlainText); `
+    $env:XCONNECT_SSL_NAME = 'xconnect'; `
+    Import-PfxCertificate -FilePath (Join-Path $env:CERT_PATH ('\\{0}.pfx' -f $env:XCONNECT_CERT_NAME)) -CertStoreLocation 'cert:\localmachine\root' -Password (ConvertTo-SecureString -String $env:CERT_SECRET -Force -AsPlainText); `
+    Import-PfxCertificate -FilePath (Join-Path $env:CERT_PATH ('\\{0}.pfx' -f $env:XCONNECT_CERT_NAME)) -CertStoreLocation 'cert:\localmachine\my' -Password (ConvertTo-SecureString -String $env:CERT_SECRET -Force -AsPlainText); `
+    Import-PfxCertificate -FilePath (Join-Path $env:CERT_PATH ('\\{0}.pfx' -f $env:XCONNECT_SSL_NAME)) -CertStoreLocation 'cert:\localmachine\my' -Password (ConvertTo-SecureString -String $env:CERT_SECRET -Force -AsPlainText); `
     Install-SitecoreConfiguration -Path (Join-Path $env:INSTALL_TEMP '\\xconnect.json') -Package (Join-Path $env:INSTALL_TEMP '\\xconnect.zip') `
     -LicenseFile (Join-Path $env:INSTALL_TEMP '\\license.xml') `
     -Sitename $env:SITENAME `
     -SolrUrl $env:SOLR_URL `
     -SolrCorePrefix $env:SITENAME `
     -XConnectCert $env:XCONNECT_CERT_NAME `
+    -SSLCert $env:XCONNECT_SSL_NAME `
     -SqlServer $env:SQL_HOST `
     -SqlDbPrefix $env:SITENAME `
     -SqlAdminUser $env:SQL_ADMIN_USER -SqlAdminPassword $env:SQL_ADMIN_PASSWORD `
@@ -51,12 +55,13 @@ RUN $env:SITENAME = 'xconnect'; `
     -SqlMarketingAutomationUser $env:SQL_ADMIN_USER -SqlMarketingAutomationPassword $env:SQL_ADMIN_PASSWORD `
     -SqlReferenceDataUser $env:SQL_ADMIN_USER -SqlReferenceDataPassword $env:SQL_ADMIN_PASSWORD `
     -SqlProcessingPoolsUser $env:SQL_ADMIN_USER -SqlProcessingPoolsPassword $env:SQL_ADMIN_PASSWORD `
-    -Skip "StopServices", "RemoveServices", "RemoveDefaultBinding", "CreateBindingsWithThumprint", "CreateHostHeader", "CreateBindingsWithDevelopmentThumprint", "SetServicesCertStorePermissions", "CleanShards", "CreateShards", "CreateShardApplicationDatabaseServerLoginSqlCmd", "CreateShardManagerApplicationDatabaseUserSqlCmd", "CreateShard0ApplicationDatabaseUserSqlCmd", "CreateShard1ApplicationDatabaseUserSqlCmd", "InstallServices", "StartServices", "StartAppPool", "StartWebsite", "ConfigureSolrSchemas"; `
+    -Skip "StopServices", "RemoveServices", "RemoveDefaultBinding", "CleanShards", "CreateShards", "CreateShardApplicationDatabaseServerLoginSqlCmd", "CreateShardManagerApplicationDatabaseUserSqlCmd", "CreateShard0ApplicationDatabaseUserSqlCmd", "CreateShard1ApplicationDatabaseUserSqlCmd", "InstallServices", "StartServices", "ConfigureSolrSchemas"; `
     Install-SitecoreConfiguration -Path (Join-Path $env:INSTALL_TEMP '\\disable-solr-ssl.json') -Sitename $env:SITENAME; `
     Set-WebConfiguration -PSPath ('IIS:\Sites\{0}' -f $env:SITENAME) -Filter '/system.web/customErrors/@mode' -Value 'Off'; `
     Add-LocalGroupMember -Group 'Performance Monitor Users' -Member ('IIS AppPool\{0}' -f $env:SITENAME); `
     Remove-Item -Path 'C:\\*.log'; `
+    Remove-Item -Path ('C:\\inetpub\\{0}\\App_Data\\logs' -f $env:SITENAME) -Force -Recurse; `
     Remove-Item -Path $env:INSTALL_TEMP -Force -Recurse; `
-    Remove-Item -Path $env:CERT_PATH -Force -Recurse; `
-    Start-WebAppPool -Name $env:SITENAME; `
-    Start-Website -Name $env:SITENAME
+    Remove-Item -Path $env:CERT_PATH -Force -Recurse;
+
+EXPOSE 443
