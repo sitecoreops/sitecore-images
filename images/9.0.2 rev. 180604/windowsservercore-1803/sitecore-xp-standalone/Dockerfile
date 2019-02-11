@@ -1,5 +1,5 @@
 # escape=`
-FROM sitecore-base:9.0.180604-windowsservercore-1803 as builder
+FROM mcr.microsoft.com/windows/servercore:1803 as builder
 
 SHELL ["powershell", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';"]
 
@@ -25,7 +25,7 @@ FROM sitecore-base:9.0.180604-windowsservercore-1803 as final
 COPY --from=builder ["/install/sitecore.zip", "/install/sitecore.json", "/install/license.xml", "/install/"]
 COPY --from=builder ["/install/Sitecore", "/Sitecore"]
 
-# Install certificates, Sitecore, apply tweaks, cleanup and start site
+# Install certificates, Sitecore, apply tweaks, and cleanup
 RUN $env:SITENAME = 'sc'; `
     $env:INSTALL_TEMP = 'C:\\install'; `
     $env:SITECORE_ADMIN_PASSWORD = 'b'; `
@@ -60,11 +60,16 @@ RUN $env:SITENAME = 'sc'; `
     -SqlProcessingTasksUser $env:SQL_ADMIN_USER -SqlProcessingTasksPassword $env:SQL_ADMIN_PASSWORD `
     -SqlProcessingPoolsUser $env:SQL_ADMIN_USER -SqlProcessingPoolsPassword $env:SQL_ADMIN_PASSWORD `
     -SqlReportingUser $env:SQL_ADMIN_USER -SqlReportingPassword $env:SQL_ADMIN_PASSWORD `
-    -Skip "CreateHostHeader", "StartAppPool", "StartWebsite", "UpdateSolrSchema", "SetCertStorePermissions"; `
-    Set-WebConfiguration -PSPath ('IIS:\Sites\{0}' -f $env:SITENAME) -Filter '/system.web/customErrors/@mode' -Value 'Off'; `
+    -Skip "CreateBindings", "CreateHostHeader", "UpdateSolrSchema"; `
+    Copy-Item -Path 'C:\\Sitecore\\Config\\*.*' -Destination ('C:\\inetpub\\{0}\\App_Config\\Include' -f $env:SITENAME); `
+    $iisPath = ('IIS:\Sites\{0}' -f $env:SITENAME); `
+    Set-WebConfiguration -PSPath $iisPath -Filter '/system.web/customErrors/@mode' -Value 'Off'; `
+    Add-WebConfigurationProperty -PSPath $iisPath -Filter '/system.webServer/rewrite/outboundRules' -Name '.' -Value @{name = 'MakeLocationHeaderRelative' ; preCondition = 'IsSitecoreAbsoluteRedirect'; match = @{serverVariable = 'RESPONSE_LOCATION'; pattern = '(https?://[^:/]+):?([0-9]+)?(.*)'}; action = @{type = 'Rewrite'; value = '{R:3}'}}; `
+    Add-WebConfigurationProperty -PSPath $iisPath -Filter '/system.webServer/rewrite/outboundRules/preConditions' -Name '.' -Value @{name = 'IsSitecoreAbsoluteRedirect'}; `
+    Add-WebConfigurationProperty -PSPath $iisPath -Filter '/system.webServer/rewrite/outboundRules/preConditions/preCondition[@name=''IsSitecoreAbsoluteRedirect'']' -Name '.' -Value @{input = '{RESPONSE_LOCATION}'; pattern = '(https?://[^:/]+):?([0-9]+)?/sitecore/(.*)'}; `
+    Add-WebConfigurationProperty -PSPath $iisPath -Filter '/system.webServer/rewrite/outboundRules/preConditions/preCondition[@name=''IsSitecoreAbsoluteRedirect'']' -Name '.' -Value @{input = '{RESPONSE_STATUS}'; pattern = '3[0-9][0-9]'}; `
+    Add-LocalGroupMember -Group 'Performance Monitor Users' -Member ('IIS AppPool\{0}' -f $env:SITENAME); `
     Remove-Item -Path 'C:\\*.log'; `
     Remove-Item -Path ('C:\\inetpub\\{0}\\App_Data\\logs' -f $env:SITENAME) -Force -Recurse; `
     Remove-Item -Path $env:INSTALL_TEMP -Force -Recurse; `
-    Remove-Item -Path $env:CERT_PATH -Force -Recurse; `
-    Start-WebAppPool -Name $env:SITENAME; `
-    Start-Website -Name $env:SITENAME
+    Remove-Item -Path $env:CERT_PATH -Force -Recurse;

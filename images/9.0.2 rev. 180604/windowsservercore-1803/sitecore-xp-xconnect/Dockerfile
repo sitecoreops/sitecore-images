@@ -1,5 +1,5 @@
 # escape=`
-FROM sitecore-base:9.0.180604-windowsservercore-1803 as builder
+FROM mcr.microsoft.com/windows/servercore:1803 as builder
 
 SHELL ["powershell", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';"]
 
@@ -54,6 +54,7 @@ RUN $env:SITENAME = 'xconnect'; `
     -Skip "StopServices", "RemoveServices", "RemoveDefaultBinding", "CreateBindingsWithThumprint", "CreateHostHeader", "CreateBindingsWithDevelopmentThumprint", "SetServicesCertStorePermissions", "CleanShards", "CreateShards", "CreateShardApplicationDatabaseServerLoginSqlCmd", "CreateShardManagerApplicationDatabaseUserSqlCmd", "CreateShard0ApplicationDatabaseUserSqlCmd", "CreateShard1ApplicationDatabaseUserSqlCmd", "InstallServices", "StartServices", "StartAppPool", "StartWebsite", "ConfigureSolrSchemas"; `
     Install-SitecoreConfiguration -Path (Join-Path $env:INSTALL_TEMP '\\disable-solr-ssl.json') -Sitename $env:SITENAME; `
     Set-WebConfiguration -PSPath ('IIS:\Sites\{0}' -f $env:SITENAME) -Filter '/system.web/customErrors/@mode' -Value 'Off'; `
+    Add-LocalGroupMember -Group 'Performance Monitor Users' -Member ('IIS AppPool\{0}' -f $env:SITENAME); `
     Remove-Item -Path 'C:\\*.log'; `
     Remove-Item -Path $env:INSTALL_TEMP -Force -Recurse; `
     Remove-Item -Path $env:CERT_PATH -Force -Recurse; `

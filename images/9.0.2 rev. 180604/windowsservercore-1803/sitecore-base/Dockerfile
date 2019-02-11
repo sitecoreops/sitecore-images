@@ -12,9 +12,10 @@ FROM mcr.microsoft.com/dotnet/framework/aspnet:4.7.2-windowsservercore-1803 as f
 
 COPY --from=download /install /install
 
+ENV INSTALL_TEMP='c:\\install'
+
 # Install Sitecore dependencies, SIF, apply tweaks, cleanup and create certificates
-RUN $env:INSTALL_TEMP = 'C:\\install'; `
-    Start-Process msiexec.exe -ArgumentList '/i', (Join-Path $env:INSTALL_TEMP '\\webdeploy.msi'), '/quiet', '/norestart' -NoNewWindow -Wait; `
+RUN Start-Process msiexec.exe -ArgumentList '/i', (Join-Path $env:INSTALL_TEMP '\\webdeploy.msi'), '/quiet', '/norestart' -NoNewWindow -Wait; `
     Start-Process msiexec.exe -ArgumentList '/i', (Join-Path $env:INSTALL_TEMP '\\urlrewrite.msi'), '/quiet', '/norestart' -NoNewWindow -Wait; `
     Start-Process (Join-Path $env:INSTALL_TEMP '\\VC_redist.x64.exe') -ArgumentList '/install', '/passive', '/norestart' -NoNewWindow -Wait; `
     Install-PackageProvider -Name NuGet -Force | Out-Null; `
