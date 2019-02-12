@@ -16,32 +16,31 @@ RUN $env:SIF_CONFIG = 'xconnect-XP0.json'; `
     $config.Tasks.InstallWDP.Params.Arguments | Add-Member -Name 'Skip' -Value @(@{'ObjectName' = 'dbDacFx'}, @{'ObjectName' = 'dbFullSql'}) -MemberType NoteProperty; `
     $config.Variables.'Site.PhysicalPath' = 'C:\inetpub\{0}' -f $env:SITENAME; `
     ConvertTo-Json $config -Depth 50 | Set-Content -Path (Join-Path $env:INSTALL_TEMP $env:SIF_CONFIG); `
-    Rename-Item -Path (Resolve-Path (Join-Path $env:INSTALL_TEMP $env:SIF_CONFIG)).Path -NewName 'xconnect.json'; `
-    Rename-Item -Path (Resolve-Path (Join-Path $env:INSTALL_TEMP $env:SIF_PACKAGE)).Path -NewName 'xconnect.zip';
+    Rename-Item -Path (Resolve-Path (Join-Path $env:INSTALL_TEMP $env:SIF_CONFIG)).Path -NewName 'config.json'; `
+    Rename-Item -Path (Resolve-Path (Join-Path $env:INSTALL_TEMP $env:SIF_PACKAGE)).Path -NewName 'package.zip';
 
 # Runtime
 FROM sitecore-xp-base:9.0.180604-windowsservercore-1803 as final
 
-COPY --from=builder ["/install/xconnect.zip", "/install/xconnect.json", "/install/disable-solr-ssl.json", "/install/license.xml", "/install/"]
+COPY --from=builder ["/install/config.json", "/install/package.zip", "/install/license.xml", "/install/disable-solr-ssl.json", "/install/"]
 COPY --from=builder ["/install/Sitecore", "/Sitecore"]
 
-# Install certificates, XConnect, disable ssl, apply tweaks, cleanup and start site
+# Install certificates, XConnect, disable ssl, apply tweaks and cleanup
 RUN $env:SITENAME = 'xconnect'; `
     $env:INSTALL_TEMP = 'C:\\install'; `
-    $env:SITECORE_ADMIN_PASSWORD = 'b'; `
     $env:SQL_ADMIN_USER = 'sa'; `
     $env:SQL_ADMIN_PASSWORD = 'HASH-epsom-sunset-cost7!'; `
-    $env:SQL_HOST='sql'; `
-    $env:SQL_DB_PREFIX='sc'; `
-    $env:SOLR_URL='http://solr:8983/solr'; `
+    $env:SQL_HOST = 'sql'; `
+    $env:SQL_DB_PREFIX = 'sc'; `
+    $env:SOLR_URL = 'http://solr:8983/solr'; `
     $env:CERT_PATH = 'C:\\certificates'; `
-    $env:CERT_SECRET = 'Sp1JJvsrkXtWW9fOSFUh'; `
     $env:XCONNECT_CERT_NAME = 'xconnect-client'; `
     $env:XCONNECT_SSL_NAME = 'xconnect'; `
-    Import-PfxCertificate -FilePath (Join-Path $env:CERT_PATH ('\\{0}.pfx' -f $env:XCONNECT_CERT_NAME)) -CertStoreLocation 'cert:\localmachine\root' -Password (ConvertTo-SecureString -String $env:CERT_SECRET -Force -AsPlainText); `
-    Import-PfxCertificate -FilePath (Join-Path $env:CERT_PATH ('\\{0}.pfx' -f $env:XCONNECT_CERT_NAME)) -CertStoreLocation 'cert:\localmachine\my' -Password (ConvertTo-SecureString -String $env:CERT_SECRET -Force -AsPlainText); `
-    Import-PfxCertificate -FilePath (Join-Path $env:CERT_PATH ('\\{0}.pfx' -f $env:XCONNECT_SSL_NAME)) -CertStoreLocation 'cert:\localmachine\my' -Password (ConvertTo-SecureString -String $env:CERT_SECRET -Force -AsPlainText); `
-    Install-SitecoreConfiguration -Path (Join-Path $env:INSTALL_TEMP '\\xconnect.json') -Package (Join-Path $env:INSTALL_TEMP '\\xconnect.zip') `
+    $certPassword = (ConvertTo-SecureString -String 'Sp1JJvsrkXtWW9fOSFUh' -Force -AsPlainText); `
+    Import-PfxCertificate -FilePath (Join-Path $env:CERT_PATH ('\\{0}.pfx' -f $env:XCONNECT_CERT_NAME)) -CertStoreLocation 'cert:\localmachine\root' -Password $certPassword; `
+    Import-PfxCertificate -FilePath (Join-Path $env:CERT_PATH ('\\{0}.pfx' -f $env:XCONNECT_CERT_NAME)) -CertStoreLocation 'cert:\localmachine\my' -Password $certPassword; `
+    Import-PfxCertificate -FilePath (Join-Path $env:CERT_PATH ('\\{0}.pfx' -f $env:XCONNECT_SSL_NAME)) -CertStoreLocation 'cert:\localmachine\my' -Password $certPassword; `
+    Install-SitecoreConfiguration -Path (Join-Path $env:INSTALL_TEMP '\\config.json') -Package (Join-Path $env:INSTALL_TEMP '\\package.zip') `
     -LicenseFile (Join-Path $env:INSTALL_TEMP '\\license.xml') `
     -Sitename $env:SITENAME `
     -SolrUrl $env:SOLR_URL `
