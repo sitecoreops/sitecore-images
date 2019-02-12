@@ -20,7 +20,7 @@ RUN $env:SIF_CONFIG = 'xconnect-XP0.json'; `
     Rename-Item -Path (Resolve-Path (Join-Path $env:INSTALL_TEMP $env:SIF_PACKAGE)).Path -NewName 'xconnect.zip';
 
 # Runtime
-FROM sitecore-base:9.0.180604-windowsservercore-1803 as final
+FROM sitecore-xp-base:9.0.180604-windowsservercore-1803 as final
 
 COPY --from=builder ["/install/xconnect.zip", "/install/xconnect.json", "/install/disable-solr-ssl.json", "/install/license.xml", "/install/"]
 COPY --from=builder ["/install/Sitecore", "/Sitecore"]

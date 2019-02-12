@@ -14,7 +14,7 @@ COPY --from=download /install /install
 
 ENV INSTALL_TEMP='c:\\install'
 
-# Install Sitecore dependencies, SIF, apply tweaks, cleanup and create certificates
+# Install Sitecore dependencies, SIF, apply tweaks and cleanup
 RUN Start-Process msiexec.exe -ArgumentList '/i', (Join-Path $env:INSTALL_TEMP '\\webdeploy.msi'), '/quiet', '/norestart' -NoNewWindow -Wait; `
     Start-Process msiexec.exe -ArgumentList '/i', (Join-Path $env:INSTALL_TEMP '\\urlrewrite.msi'), '/quiet', '/norestart' -NoNewWindow -Wait; `
     Start-Process (Join-Path $env:INSTALL_TEMP '\\VC_redist.x64.exe') -ArgumentList '/install', '/passive', '/norestart' -NoNewWindow -Wait; `
@@ -24,11 +24,4 @@ RUN Start-Process msiexec.exe -ArgumentList '/i', (Join-Path $env:INSTALL_TEMP '
     Set-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Services\Dnscache\Parameters' -Name ServerPriorityTimeLimit -Value 0 -Type DWord; `
     setx /M PATH $($env:PATH + ';C:\Sitecore\Scripts'); `
     Remove-Website -Name 'Default Web Site'; `
-    Remove-Item -Path $env:INSTALL_TEMP -Force -Recurse; `
-    $env:CERT_PATH = 'C:\\certificates'; `
-    $env:CERT_SECRET = 'Sp1JJvsrkXtWW9fOSFUh'; `
-    $env:XCONNECT_CERT_NAME = 'xconnect-client'; `
-    $env:XCONNECT_SSL_NAME = 'xconnect'; `
-    New-Item -Path $env:CERT_PATH -ItemType Directory | Out-Null; `
-    New-SelfSignedCertificate -CertStoreLocation 'cert:\localmachine\my' -DnsName $env:XCONNECT_CERT_NAME -KeyExportPolicy Exportable -Provider 'Microsoft Enhanced RSA and AES Cryptographic Provider' | Export-PfxCertificate -FilePath ('{0}\\{1}.pfx' -f $env:CERT_PATH, $env:XCONNECT_CERT_NAME) -Password (ConvertTo-SecureString -String $env:CERT_SECRET -Force -AsPlainText) | Out-Null; `
-    New-SelfSignedCertificate -CertStoreLocation 'cert:\localmachine\my' -DnsName $env:XCONNECT_SSL_NAME -KeyExportPolicy Exportable -Provider 'Microsoft Enhanced RSA and AES Cryptographic Provider' | Export-PfxCertificate -FilePath ('{0}\\{1}.pfx' -f $env:CERT_PATH, $env:XCONNECT_SSL_NAME) -Password (ConvertTo-SecureString -String $env:CERT_SECRET -Force -AsPlainText) | Out-Null;
+    Remove-Item -Path $env:INSTALL_TEMP -Force -Recurse;

@@ -20,7 +20,7 @@ RUN $env:SIF_CONFIG = 'sitecore-XP0.json'; `
     Rename-Item -Path (Resolve-Path (Join-Path $env:INSTALL_TEMP $env:SIF_PACKAGE)).Path -NewName 'sitecore.zip';
 
 # Runtime
-FROM sitecore-base:9.0.180604-windowsservercore-1803 as final
+FROM sitecore-xp-base:9.0.180604-windowsservercore-1803 as final
 
 COPY --from=builder ["/install/sitecore.zip", "/install/sitecore.json", "/install/license.xml", "/install/"]
 COPY --from=builder ["/install/Sitecore", "/Sitecore"]
