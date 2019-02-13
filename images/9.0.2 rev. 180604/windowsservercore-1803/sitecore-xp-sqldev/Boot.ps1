@@ -5,7 +5,13 @@ param(
     [string]$InstallPath,
     [Parameter(Mandatory = $true)]
     [ValidateScript( {Test-Path $_ -PathType 'Container'})] 
-    [string]$DataPath
+    [string]$DataPath,
+    [Parameter(Mandatory = $true)]
+    [ValidateNotNullOrEmpty()] 
+    [string]$SqlHostname,
+    [Parameter(Mandatory = $true)]
+    [ValidateNotNullOrEmpty()]
+    [string]$DatabasePrefix
 )
 
 $noDatabases = (Get-ChildItem -Path $DataPath -Filter "*.mdf") -eq $null
@@ -36,9 +42,11 @@ Get-ChildItem -Path $DataPath -Filter "*.mdf" | ForEach-Object {
 
 Write-Host "### Preparing Sitecore databases..."
 
-# See http://jonnekats.nl/2017/sql-connection-issue-xconnect/
-Invoke-Sqlcmd -Query ("UPDATE [{0}_Xdb.Collection.ShardMapManager].[__ShardManagement].[ShardsGlobal] SET ServerName = '{1}'" -f $env:DB_PREFIX, "sql")
+# See http://jonnekats.nl/2017/sql-connection-issue-xconnect/ for details...
 Invoke-Sqlcmd -Query ("EXEC sp_MSforeachdb 'IF charindex(''{0}'', ''?'' ) = 1 BEGIN EXEC [?]..sp_changedbowner ''sa'' END'" -f $env:DB_PREFIX)
+Invoke-Sqlcmd -Query ("UPDATE [{0}_Xdb.Collection.ShardMapManager].[__ShardManagement].[ShardsGlobal] SET ServerName = '{1}'" -f $env:DB_PREFIX, $SqlHostname)
+Invoke-Sqlcmd -Query ("UPDATE [{0}_Xdb.Collection.Shard0].[__ShardManagement].[ShardsLocal] SET ServerName = '{1}'" -f $env:DB_PREFIX, $SqlHostname)
+Invoke-Sqlcmd -Query ("UPDATE [{0}_Xdb.Collection.Shard1].[__ShardManagement].[ShardsLocal] SET ServerName = '{1}'" -f $env:DB_PREFIX, $SqlHostname)
 
 Write-Host "### Sitecore databases ready!"
 

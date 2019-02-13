@@ -35,6 +35,7 @@ ENV sa_password='HASH-epsom-sunset-cost7!'
 ENV DB_PREFIX='sc'
 ENV INSTALL_PATH='c:/install/'
 ENV DATA_PATH='c:/data/'
+ENV SQL_HOSTNAME='sql'
 
 VOLUME ${DATA_PATH}
 
@@ -52,4 +53,4 @@ RUN & (Join-Path $env:INSTALL_PATH "\\Extract-Databases.ps1") -Path $env:INSTALL
     Remove-Item -Path 'C:\\tools' -Recurse -Force; `
     Get-ChildItem -Path $env:INSTALL_PATH -Exclude '*.mdf', '*.ldf' -Recurse -Force | Remove-Item -Force;
 
-CMD C:/Boot.ps1 -InstallPath $env:INSTALL_PATH -DataPath $env:DATA_PATH
+CMD C:/Boot.ps1 -InstallPath $env:INSTALL_PATH -DataPath $env:DATA_PATH -SqlHostname $env:SQL_HOSTNAME -DatabasePrefix $env:DB_PREFIX;
