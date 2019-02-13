@@ -37,8 +37,6 @@ RUN $env:SITENAME = 'xconnect'; `
     $env:XCONNECT_CERT_NAME = 'xconnect-client'; `
     $env:XCONNECT_SSL_NAME = 'xconnect'; `
     $certPassword = (ConvertTo-SecureString -String 'Sp1JJvsrkXtWW9fOSFUh' -Force -AsPlainText); `
-    Import-PfxCertificate -FilePath (Join-Path $env:CERT_PATH ('\\{0}.pfx' -f $env:XCONNECT_CERT_NAME)) -CertStoreLocation 'cert:\localmachine\root' -Password $certPassword; `
-    Import-PfxCertificate -FilePath (Join-Path $env:CERT_PATH ('\\{0}.pfx' -f $env:XCONNECT_CERT_NAME)) -CertStoreLocation 'cert:\localmachine\my' -Password $certPassword; `
     Import-PfxCertificate -FilePath (Join-Path $env:CERT_PATH ('\\{0}.pfx' -f $env:XCONNECT_SSL_NAME)) -CertStoreLocation 'cert:\localmachine\my' -Password $certPassword; `
     Install-SitecoreConfiguration -Path (Join-Path $env:INSTALL_TEMP '\\config.json') -Package (Join-Path $env:INSTALL_TEMP '\\package.zip') `
     -LicenseFile (Join-Path $env:INSTALL_TEMP '\\license.xml') `
