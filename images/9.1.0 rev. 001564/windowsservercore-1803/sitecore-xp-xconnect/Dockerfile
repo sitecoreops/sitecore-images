@@ -25,7 +25,7 @@ FROM sitecore-xp-base:9.1.001564-windowsservercore-1803 as final
 COPY --from=builder ["/install/config.json", "/install/package.zip", "/install/license.xml", "/install/disable-solr-ssl.json", "/install/"]
 COPY --from=builder ["/install/Sitecore", "/Sitecore"]
 
-# Install certificates, XConnect, disable ssl, apply tweaks and cleanup
+# Install XConnect, disable ssl, apply tweaks and cleanup
 RUN $env:SITENAME = 'xconnect'; `
     $env:INSTALL_TEMP = 'C:\\install'; `
     $env:SQL_ADMIN_USER = 'sa'; `

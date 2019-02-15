@@ -24,7 +24,7 @@ FROM sitecore-xp-base:9.1.001564-windowsservercore-1803 as final
 COPY --from=builder ["/install/config.json", "/install/package.zip", "/install/license.xml", "/install/"]
 COPY --from=builder ["/install/Sitecore", "/Sitecore"]
 
-# Install certificates, Sitecore, apply tweaks and cleanup
+# Install Sitecore, apply tweaks and cleanup
 RUN $env:SITENAME = 'sc'; `
     $env:INSTALL_TEMP = 'C:\\install'; `
     $env:SITECORE_ADMIN_PASSWORD = 'b'; `
