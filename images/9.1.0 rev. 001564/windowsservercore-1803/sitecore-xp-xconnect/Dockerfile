@@ -54,10 +54,6 @@ RUN $env:SITENAME = 'xconnect'; `
     -Skip "StopServices", "RemoveServices", "RemoveDefaultBinding", "CleanShards", "CreateShards", "CreateShardApplicationDatabaseServerLoginSqlCmd", "CreateShardManagerApplicationDatabaseUserSqlCmd", "CreateShard0ApplicationDatabaseUserSqlCmd", "CreateShard1ApplicationDatabaseUserSqlCmd", "InstallServices", "StartServices", "ConfigureSolrSchemas"; `
     Install-SitecoreConfiguration -Path (Join-Path $env:INSTALL_TEMP '\\disable-solr-ssl.json') -Sitename $env:SITENAME; `
     Set-WebConfiguration -PSPath ('IIS:\Sites\{0}' -f $env:SITENAME) -Filter '/system.web/customErrors/@mode' -Value 'Off'; `
-    $thumbprint = Get-ChildItem -Path 'cert:\localmachine\my' -Recurse | Where-Object { $_.Subject -eq ('CN={0}' -f $env:XCONNECT_SSL_NAME)} | Select-Object -First 1 -ExpandProperty Thumbprint; `
-    New-WebBinding -Name $env:SITENAME -IPAddress * -Port 443 -Protocol "https"; `
-    $binding = Get-WebBinding -Name $Env:SITENAME -Protocol "https"; `
-    $binding.AddSslCertificate($thumbprint, 'my'); `
     Add-LocalGroupMember -Group 'Performance Monitor Users' -Member ('IIS AppPool\{0}' -f $env:SITENAME); `
     Remove-Item -Path 'C:\\*.log'; `
     Remove-Item -Path ('C:\\inetpub\\{0}\\App_Data\\logs' -f $env:SITENAME) -Force -Recurse; `
