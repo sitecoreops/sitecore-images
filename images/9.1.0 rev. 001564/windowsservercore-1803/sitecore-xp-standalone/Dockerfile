@@ -37,7 +37,7 @@ RUN $env:SITENAME = 'sc'; `
     $env:XCONNECT_CERT_NAME = 'xconnect-client'; `
     $env:XCONNECT_SSL_NAME = 'xconnect'; `
     $env:XCONNECT_URL = 'https://xconnect'; `
-    $env:IDENTITYSERVER_URL = 'https://identityserver'; `
+    $env:IDENTITYSERVER_URL = 'https://127.0.0.1'; `
     $env:IDENTITYSERVER_SECRET = 'R6mYfCbM4Ci0niMBuzKVHIKc'; `
     Install-SitecoreConfiguration -Path (Join-Path $env:INSTALL_TEMP '\\config.json') -Package (Join-Path $env:INSTALL_TEMP '\\package.zip') `
     -LicenseFile (Join-Path $env:INSTALL_TEMP '\\license.xml') `
