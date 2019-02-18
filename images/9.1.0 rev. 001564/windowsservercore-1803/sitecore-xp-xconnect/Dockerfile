@@ -59,5 +59,4 @@ RUN $env:SITENAME = 'xconnect'; `
     Remove-Item -Path ('C:\\inetpub\\{0}\\App_Data\\logs' -f $env:SITENAME) -Force -Recurse; `
     Remove-Item -Path $env:INSTALL_TEMP -Force -Recurse;
 
-
 EXPOSE 443

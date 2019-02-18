@@ -32,7 +32,7 @@ RUN $env:SITENAME = 'sc'; `
     Install-SitecoreConfiguration -Path (Join-Path $env:INSTALL_TEMP '\\sitecore.json') -Package (Join-Path $env:INSTALL_TEMP '\\sitecore.zip') `
     -LicenseFile (Join-Path $env:INSTALL_TEMP '\\license.xml') `
     -Sitename $env:SITENAME `
-    -SitecoreIdentityAuthority "https://127.0.0.1" `
+    -SitecoreIdentityAuthority "https://identityserver" `
     -SolrUrl "http://solr:8983/solr" `
     -SolrCorePrefix $env:SITENAME `
     -SqlServer "sql" `
