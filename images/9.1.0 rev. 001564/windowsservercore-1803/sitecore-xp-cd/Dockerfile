@@ -40,7 +40,7 @@ RUN $env:SITENAME = 'sc'; `
     Install-SitecoreConfiguration -Path (Join-Path $env:INSTALL_TEMP '\\config.json') -Package (Join-Path $env:INSTALL_TEMP '\\package.zip') `
     -LicenseFile (Join-Path $env:INSTALL_TEMP '\\license.xml') `
     -Sitename $env:SITENAME `
-    -SitecoreIdentityAuthority $env:IDENTITYSERVER_SECRET `
+    -SitecoreIdentityAuthority $env:IDENTITYSERVER_URL `
     -SolrUrl $env:SOLR_URL `
     -SolrCorePrefix $env:SQL_DB_PREFIX `
     -XConnectCert $env:XCONNECT_CERT_NAME `
