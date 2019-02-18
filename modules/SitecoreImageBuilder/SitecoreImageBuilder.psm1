@@ -14,7 +14,10 @@ function Invoke-Build
         [array]$Tags = @("*"),
         [Parameter(Mandatory = $false)]
         [ValidateSet("WhenChanged", "Always", "Never")]
-        [string]$PushMode = "WhenChanged"
+        [string]$PushMode = "WhenChanged",
+        [Parameter(Mandatory = $false)]
+        [ValidateSet("Always", "Never")]
+        [string]$PullMode = "Always"
     )
     
     # Setup
@@ -25,7 +28,9 @@ function Invoke-Build
     $defaultPriority = 1000
     $priorities = New-Object System.Collections.Specialized.OrderedDictionary
     $priorities.Add("^sitecore-base:(.*)$", 100)
-    $priorities.Add("^sitecore-openjdk:(.*)$", 200)
+    $priorities.Add("^sitecore-xp-base:(.*)$", 110)
+    $priorities.Add("^sitecore-xp-xconnect:(.*)$", 120)
+    $priorities.Add("^sitecore-openjdk:(.*)$", 130)
     $priorities.Add("^(.*)$", $defaultPriority)
     
     # Find out what to build
@@ -74,17 +79,24 @@ function Invoke-Build
     Write-Host "### Build specifications loaded..." -ForegroundColor Green
 
     # Pull latest external images
-    $specs | Select-Object -ExpandProperty Base | Where-Object { !($_.StartsWith("sitecore")) } | Select-Object -Unique | ForEach-Object {
-        $tag = $_
+    if ($PullMode -eq "Always")
+    {
+        $specs | Select-Object -ExpandProperty Base | Where-Object { !($_.StartsWith("sitecore")) } | Select-Object -Unique | ForEach-Object {
+            $tag = $_
 
-        docker pull $tag
+            docker pull $tag
 
-        $LASTEXITCODE -ne 0 | Where-Object { $_ } | ForEach-Object { throw "Failed." }
+            $LASTEXITCODE -ne 0 | Where-Object { $_ } | ForEach-Object { throw "Failed." }
 
-        Write-Host ("### External image '{0}' is latest." -f $tag)
+            Write-Host ("### External image '{0}' is latest." -f $tag)
+        }
+
+        Write-Host "### External images is up to date..." -ForegroundColor Green
     }
-
-    Write-Host "### External images is up to date..." -ForegroundColor Green
+    else
+    {
+        Write-Warning ("### Pulling external images skipped since PullMode was '{0}'." -f $PullMode)
+    }
 
     # Start build...
     $specs | Where-Object { $_.Include } | ForEach-Object {
