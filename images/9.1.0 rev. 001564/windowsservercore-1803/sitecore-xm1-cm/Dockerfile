@@ -34,7 +34,7 @@ RUN $env:SITENAME = 'sc'; `
     -LicenseFile (Join-Path $env:INSTALL_TEMP '\\license.xml') `
     -Sitename $env:SITENAME `
     -SitecoreAdminPassword "b" `
-    -SitecoreIdentityAuthority "https://127.0.0.1" `
+    -SitecoreIdentityAuthority "https://identityserver" `
     -SitecoreIdentitySecret $env:SQL_ADMIN_PASSWORD `
     -SolrUrl "http://solr:8983/solr" `
     -SolrCorePrefix $env:SITENAME `
