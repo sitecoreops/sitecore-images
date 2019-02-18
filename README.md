@@ -98,6 +98,13 @@ There are some more background and details in this post: [https://invokecommand.
 | 9.0.171002 | sitecore-xm1-cm | windowsservercore | 1709 | `sitecore-xm1-cm:9.0.171002-windowsservercore-1709` [Dockerfile](images/9.0.0%20rev.%20171002/windowsservercore-1709/sitecore-xm1-cm/Dockerfile) |
 | 9.0.171002 | sitecore-xm1-cd | windowsservercore | 1709 | `sitecore-xm1-cd:9.0.171002-windowsservercore-1709` [Dockerfile](images/9.0.0%20rev.%20171002/windowsservercore-1709/sitecore-xm1-cd/Dockerfile) |
 | 9.0.171002 | sitecore-base | windowsservercore | 1709 | `sitecore-base:9.0.171002-windowsservercore-1709` [Dockerfile](images/9.0.0%20rev.%20171002/windowsservercore-1709/sitecore-base/Dockerfile) |
+| 8.2.180406 | sitecore-sqldev | windowsservercore | ltsc2019 | `sitecore-sqldev:8.2.180406-windowsservercore-ltsc2019` [Dockerfile](images/8.2%20rev.%20180406/windowsservercore-ltsc2019/sitecore-sqldev/Dockerfile) |
+| 8.2.180406 | sitecore-reporting | windowsservercore | ltsc2019 | `sitecore-reporting:8.2.180406-windowsservercore-ltsc2019` [Dockerfile](images/8.2%20rev.%20180406/windowsservercore-ltsc2019/sitecore-reporting/Dockerfile) |
+| 8.2.180406 | sitecore-processing | windowsservercore | ltsc2019 | `sitecore-processing:8.2.180406-windowsservercore-ltsc2019` [Dockerfile](images/8.2%20rev.%20180406/windowsservercore-ltsc2019/sitecore-processing/Dockerfile) |
+| 8.2.180406 | sitecore-cm | windowsservercore | ltsc2019 | `sitecore-cm:8.2.180406-windowsservercore-ltsc2019` [Dockerfile](images/8.2%20rev.%20180406/windowsservercore-ltsc2019/sitecore-cm/Dockerfile) |
+| 8.2.180406 | sitecore-cd | windowsservercore | ltsc2019 | `sitecore-cd:8.2.180406-windowsservercore-ltsc2019` [Dockerfile](images/8.2%20rev.%20180406/windowsservercore-ltsc2019/sitecore-cd/Dockerfile) |
+| 8.2.180406 | sitecore | windowsservercore | ltsc2019 | `sitecore:8.2.180406-windowsservercore-ltsc2019` [Dockerfile](images/8.2%20rev.%20180406/windowsservercore-ltsc2019/sitecore/Dockerfile) |
+| 8.2.180406 | sitecore-solr | nanoserver | 1809 | `sitecore-solr:8.2.180406-nanoserver-1809` [Dockerfile](images/8.2%20rev.%20180406/nanoserver-1809/sitecore-solr/Dockerfile) |
 | 8.2.180406 | sitecore-sqldev | windowsservercore | 1803 | `sitecore-sqldev:8.2.180406-windowsservercore-1803` [Dockerfile](images/8.2%20rev.%20180406/windowsservercore-1803/sitecore-sqldev/Dockerfile) |
 | 8.2.180406 | sitecore-solr | nanoserver | 1803 | `sitecore-solr:8.2.180406-nanoserver-1803` [Dockerfile](images/8.2%20rev.%20180406/nanoserver-1803/sitecore-solr/Dockerfile) |
 | 8.2.180406 | sitecore-reporting | windowsservercore | 1803 | `sitecore-reporting:8.2.180406-windowsservercore-1803` [Dockerfile](images/8.2%20rev.%20180406/windowsservercore-1803/sitecore-reporting/Dockerfile) |
