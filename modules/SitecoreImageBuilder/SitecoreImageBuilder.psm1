@@ -81,7 +81,7 @@ function Invoke-Build
     # Pull latest external images
     if ($PullMode -eq "Always")
     {
-        $specs | Select-Object -ExpandProperty Base | Where-Object { !($_.StartsWith("sitecore")) } | Select-Object -Unique | ForEach-Object {
+        $specs | Select-Object -ExpandProperty Base | Where-Object { !($_.StartsWith("sitecore")) -and $_.Include -eq $true } | Select-Object -Unique | ForEach-Object {
             $tag = $_
 
             docker pull $tag
