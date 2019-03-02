@@ -1,0 +1,32 @@
+version: '2.4'
+
+services:
+
+  standalone:
+    image: sitecore:8.2.170407-windowsservercore-1803
+    volumes:
+      - .\data\standalone:C:\Sitecore
+    ports:
+      - "44002:80"
+    links:
+      - sql
+      - mongodb
+  
+  mongodb:
+    image: mongo:4.1.8-windowsservercore-1803
+    volumes:
+      - .\data\mongo:C:\data\db
+    mem_limit: 2GB
+    ports:
+      - "27117:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: roman
+      
+  sql:
+    image: sitecore-sqldev:8.2.170407-windowsservercore-1803
+    volumes:
+      - .\data\sql:C:\Data
+    mem_limit: 2GB
+    ports:
+      - "44010:1433"
