@@ -105,6 +105,10 @@ function Invoke-Build
 
         Write-Host "### External images is up to date..." -ForegroundColor Green
     }
+    else
+    {
+        Write-Warning ("### Pulling external images skipped since PullMode was '{0}'." -f $PullMode)
+    }
 
     # Start build...
     $specs | Where-Object { $_.Include } | ForEach-Object {
