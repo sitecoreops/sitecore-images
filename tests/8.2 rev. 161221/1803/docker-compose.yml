@@ -11,7 +11,7 @@ services:
       - "44010:1433"
 
   sitecore:
-    image: sitecore-base:8.2.161221-windowsservercore-1803
+    image: sitecore:8.2.161221-windowsservercore-1803
     volumes:
       - .\data\sc:C:\Sitecore\Data\logs
     ports:

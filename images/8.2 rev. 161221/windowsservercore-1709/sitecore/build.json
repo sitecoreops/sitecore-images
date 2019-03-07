@@ -1,5 +1,5 @@
 {
-    "tag": "sitecore-base:8.2.161221-windowsservercore-1709",
+    "tag": "sitecore:8.2.161221-windowsservercore-1709",
     "sources": [
         "license.xml",
         "Sitecore 8.2 rev. 161221.zip"
