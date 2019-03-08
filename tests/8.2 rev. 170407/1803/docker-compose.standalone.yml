@@ -19,9 +19,6 @@ services:
     mem_limit: 2GB
     ports:
       - "27117:27017"
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_INITDB_ROOT_PASSWORD: roman
       
   sql:
     image: sitecore-sqldev:8.2.170407-windowsservercore-1803
