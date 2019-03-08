@@ -9,4 +9,3 @@ tests/**/data/**/*
 !tests/**/data/*/README.md
 /sources
 /build.ps1
-/docker-compose/**/data
