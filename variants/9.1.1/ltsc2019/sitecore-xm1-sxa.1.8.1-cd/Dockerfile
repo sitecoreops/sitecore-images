@@ -6,7 +6,7 @@ SHELL ["powershell", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPref
 COPY . /install/
 
 # Expand zips, prepare SIF config and WDP package
-RUN $env:SIF_PACKAGE_SXA = 'Sitecore JavaScript Services Server for Sitecore 9.1.1 XM 11.0.1 rev. 190318 CD.scwdp.zip'; `
+RUN $env:SIF_PACKAGE_SXA = 'Sitecore Experience Accelerator XM 1.8.1 rev. 190319 for 9.1.1 CD.scwdp.zip'; `
     $env:INSTALL_TEMP = 'C:\\install'; `
     Rename-Item -Path (Resolve-Path (Join-Path $env:INSTALL_TEMP $env:SIF_PACKAGE_SXA)).Path -NewName 'sxa.zip';
 
