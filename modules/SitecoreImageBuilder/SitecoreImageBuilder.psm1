@@ -100,7 +100,7 @@ function Invoke-Build
 
         # Could be pulling remote resx now, so only grab for images
         # we are intending to building
-        If ($spec.Include -and -not $Spec.Skip) {
+        If ($spec.Include) {
             
             $spec.Sources | ForEach-Object {
                 $sources += $InstallSourceResolver.Invoke($_, $spec.Tag)
