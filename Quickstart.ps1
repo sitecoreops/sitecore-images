@@ -34,7 +34,7 @@ Begin {
 }
 Process {
   # Import module
-  Import-Module .\modules\SitecoreImageBuilder -Force
+  Import-Module ".\modules\SitecoreImageBuilder" -Force
 
   # Establish mechanism to fiding packages based on incoming params  
   If ($PSCmdlet.ParameterSetName -eq "__Local") {
@@ -47,7 +47,7 @@ Process {
   } Else {
     # Cache a list of packages we could potentially be downloading into
     # a lookup table we'll use in the InstallSourceResolver
-    $packages = Get-Content ".\packages.json" | Where-Object { $_ -notmatch "^(\s*//|\s+$)" } | ConvertFrom-Json
+    $packages = Get-Content "${PSScriptRoot}\sitecore-packages.json" | Where-Object { $_ -notmatch "^(\s*//|\s+$)" } | ConvertFrom-Json
     $packages | Get-Member -MemberType NoteProperty | ForEach-Object {
       $packageName = $_.Name
       $package = $packages.$packageName
@@ -65,16 +65,19 @@ Process {
     $InstallSourceResolver = {
       Param($Filename, $Tag)
 
+      # Look locally first
       $expectedLocation = Join-Path $SavePath -ChildPath $Filename
       If (Test-Path $expectedLocation -PathType "Leaf") {
         Write-Verbose "${filename} resolved to ${expectedLocation}"
         Return $expectedLocation
       }
 
+      # Next, look to remote source
       $remoteSource = $LookupTable.$Filename
       If ($null -ne $remoteSource) {
         Write-Verbose "${filename} not found locally, attempting to fetch from dev.sitecore.net"
 
+        # Login to sitecore's site and save session for re-use
         if ($null -eq $scSession) {
           Write-Verbose "Logging into dev.sitecore.net"
           $loginResponse = Invoke-WebRequest "https://dev.sitecore.net/api/authorization" -Method Post -Body @{
@@ -88,13 +91,16 @@ Process {
           Write-Verbose "Logged in."
         }
 
+        # fetch from sitecore site.
         Write-Verbose "Downloading ${Filename} from ${remoteSource}"
         Invoke-WebRequest -Uri $remoteSource -OutFile $expectedLocation -WebSession $scSession -UseBasicParsing
         
+        # Now return the path to the saved location
         Write-Verbose "Download saved to ${expectedLocation}"
         Return $expectedLocation
       }
 
+      # Not local, and don't know where to get it from
       Throw "Unable to find/fetch ${Filename} needed for ${Tag}"
     }
   }
