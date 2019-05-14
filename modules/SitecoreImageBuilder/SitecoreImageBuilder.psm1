@@ -26,7 +26,7 @@ function Invoke-Build
         [string]$PullMode = "Always"
     )
 
-    If ($PSCmdlet.ParameterSetName -eq "SourceFromPath") {
+    If ($PSCmdlet.ParameterSetName -eq "__SourcePath") {
         $InstallSourceResolver = {
             Param($Source)
             Join-Path $InstallSourcePath -ChildPath $Source
