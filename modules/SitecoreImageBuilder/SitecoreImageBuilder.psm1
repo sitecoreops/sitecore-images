@@ -116,7 +116,7 @@ function Invoke-Build
     $specs.AddRange(@($unsortedSpecs | Where-Object { $_.Priority -eq $defaultPriority }))
 
     # Print results
-    $specs | Select-Object -Property Tag, Include, Skip, Priority, Base | Format-Table
+    $specs | Select-Object -Property Tag, Include, Priority, Base | Format-Table
 
     Write-Host "### Build specifications loaded..." -ForegroundColor Green
 
