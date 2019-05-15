@@ -47,15 +47,7 @@ Process {
   } Else {
     # Cache a list of packages we could potentially be downloading into
     # a lookup table we'll use in the InstallSourceResolver
-    $packages = Get-Content "${PSScriptRoot}\sitecore-packages.json" | Where-Object { $_ -notmatch "^(\s*//|\s+$)" } | ConvertFrom-Json
-    $packages | Get-Member -MemberType NoteProperty | ForEach-Object {
-      $packageName = $_.Name
-      $package = $packages.$packageName
-      
-      If ($null -ne $package.url) {
-        $LookupTable.Add($package.filename, $package.url)
-      }
-    }
+    $packages = Get-Content "${PSScriptRoot}\sitecore-packages.json" | ConvertFrom-Json
 
     # ensure SavePath exists
     If (!(Test-Path $SavePath)) {
@@ -73,13 +65,21 @@ Process {
       }
 
       # Next, look to remote source
-      $remoteSource = $LookupTable.$Filename
-      If ($null -ne $remoteSource) {
-        Write-Verbose "${filename} not found locally, attempting to fetch from dev.sitecore.net"
+      # grab reference to the package at hand (if it exists)
+      If ($packages.PSObject.Properties.Name -contains $Filename) {
+        $package = $packages.$Filename
+
+        # confirm we have a remote source
+        If ($package.psobject.Properties.Name -notcontains "url") {
+          Throw "Unable to find/fetch '${Filename}' needed for '${Tag}', no 'url' provided in sitecore-packages.json entry."
+        }
+
+        # save a reference to the source
+        $remoteSource = $package.url
+        Write-Verbose "${Filename} resolved to ${remoteSource}"
 
         # Login to sitecore's site and save session for re-use
         if ($null -eq $scSession) {
-          Write-Verbose "Logging into dev.sitecore.net"
           $loginResponse = Invoke-WebRequest "https://dev.sitecore.net/api/authorization" -Method Post -Body @{
             username = $SitecoreUsername
             password = $SitecorePassword
@@ -88,7 +88,7 @@ Process {
           If ($null -eq $loginResponse -or $loginResponse.StatusCode -ne 200) {
             Throw "Unable to login to dev.sitecore.net with the supplied credentials"
           }
-          Write-Verbose "Logged in."
+          Write-Verbose "Logged in to dev.sitecore.net."
         }
 
         # fetch from sitecore site.
@@ -101,7 +101,7 @@ Process {
       }
 
       # Not local, and don't know where to get it from
-      Throw "Unable to find/fetch ${Filename} needed for ${Tag}"
+      Throw "Unable to find/fetch '${Filename}' needed for '${Tag}', not found locally and no entry in sitecore-packages.json."
     }
   }
 
@@ -112,7 +112,9 @@ Process {
     -InstallSourceResolver $InstallSourceResolver `
     -Registry $Registry `
     -Exclude "*:7.5*" `
-    -Verbose:$VerbosePreference
+    -ErrorAction:$ErrorActionPreference `
+    -Verbose:$VerbosePreference `
+    -WhatIf:$WhatIfPreference
 }
 End {
   $ErrorActionPreference = $eap;
