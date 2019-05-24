@@ -1,5 +1,8 @@
 # escape=`
-FROM mcr.microsoft.com/windows/servercore:1803 as builder
+ARG BUILD_IMAGE
+ARG BASE_IMAGE
+
+FROM $BUILD_IMAGE as builder
 
 SHELL ["powershell", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';"]
 
@@ -13,8 +16,7 @@ RUN [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tl
     Expand-Archive ojdkbuild.zip -DestinationPath C:\; `
     Move-Item -Path ('C:\\{0}' -f ($env:JAVA_OJDKBUILD_ZIP -Replace '.zip', '')) -Destination $env:JAVA_HOME;
 
-# Runtime image
-FROM mcr.microsoft.com/windows/nanoserver:1709 as final
+FROM $BASE_IMAGE
 
 COPY --from=builder /ojdkbuild /ojdkbuild
 

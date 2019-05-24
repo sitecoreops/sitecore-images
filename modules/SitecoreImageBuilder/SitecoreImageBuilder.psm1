@@ -145,17 +145,18 @@ function Invoke-Build
         }
     
         # Build image
-        if ($tag -like "*sql*")
-        {
-            # Building SQL based images needs more memory than the default 2GB...
-            docker image build --isolation "hyperv" --memory 4GB --tag $tag $spec.Path
-        }
-        else
-        {
-            docker image build --isolation "hyperv" --tag $tag $spec.Path 
-        }
+        $buildOptions = New-Object System.Collections.Generic.List[System.Object]
+        $buildOptions.Add("--isolation 'hyperv'")
+        $buildOptions.Add("--tag '$tag'")
+        $buildOptions.AddRange($spec.BuildOptions)
+        
+        $buildCommand = "docker image build {0} '{1}'" -f ($buildOptions -join " "), $spec.Path
+        
+        Write-Verbose ("Invoking: {0} " -f $buildCommand) -Verbose:$VerbosePreference
 
-        $LASTEXITCODE -ne 0 | Where-Object { $_ } | ForEach-Object { throw "Failed." }
+        & ([scriptblock]::create($buildCommand))
+        
+        $LASTEXITCODE -ne 0 | Where-Object { $_ } | ForEach-Object { throw "Failed: $buildCommand" }
 
         # Tag image
         $fulltag = "{0}/{1}" -f $Registry, $tag
@@ -201,41 +202,19 @@ function Find-BuildSpecifications
     )
 
     Get-ChildItem -Path $Path -Filter "build.json" -Recurse | ForEach-Object {
+        $buildContextPath = $_.Directory.FullName
         $buildFilePath = $_.FullName
         $data = Get-Content -Path $buildFilePath | ConvertFrom-Json
-        $dockerFile = Get-Item -Path (Join-Path $_.Directory.FullName "\Dockerfile")
+        $dockerFile = Get-Item -Path (Join-Path $buildContextPath "\Dockerfile")
         
-        # Find base images
-        $baseImages = $dockerFile | Get-Content | Where-Object { $_.StartsWith("FROM ") } | ForEach-Object { Write-Output $_.Replace("FROM ", "").Trim() } | ForEach-Object {
-            $image = $_
+        $dataSources = $data.sources
 
-            if ($image -like "* as *")
-            {
-                $image = $image.Substring(0, $image.IndexOf(" as "))
-            }
-
-            if ([string]::IsNullOrEmpty($image))
-            {
-                throw ("Invalid Dockerfile '{0}', no FROM image was found?" -f $_.FullName)
-            }
-
-            Write-Output $image
-        }
-
-        if ([string]::IsNullOrEmpty($data.tag))
+        if ($null -eq $dataSources)
         {
-            throw ("Tag was null or empty in '{0}'." -f $_.FullName)
+            $dataSources = @()
         }
 
-        $dataSources = @()
-
-        if ($null -ne $data.sources)
-        {
-            $dataSources = $data.sources
-        }
-
-        $sources = @()
-        $dataSources | ForEach-Object {
+        $sources = $dataSources | ForEach-Object {
             $source = $_
             $uri = $null
             $name = $source.name;
@@ -253,21 +232,91 @@ function Find-BuildSpecifications
                 throw ("Parse error in '{0}', name was null or empty." -f $buildFilePath)
             }
           
-            $sources += (New-Object PSObject -Property @{
+            Write-Output (New-Object PSObject -Property @{
                     Name = $name;
                     Uri  = $uri;
                 })
         }
+
+        $dockerFileContent = $dockerFile | Get-Content
+        $dockerFileArgLines = $dockerFileContent | Select-String -SimpleMatch "ARG " -CaseSensitive | ForEach-Object { Write-Output $_.ToString().Replace("ARG ", "") }
+        $dockerFileFromLines = $dockerFileContent | Select-String -SimpleMatch "FROM " -CaseSensitive | ForEach-Object { Write-Output $_.ToString().Replace("FROM ", "") }
+
+        $dataTags = $data.tags
         
-        Write-Output (New-Object PSObject -Property @{
-                Tag            = $data.tag;
-                Base           = $baseImages;
-                Path           = $_.Directory.FullName;
-                DockerFilePath = $dockerFile.FullName;
-                Sources        = $sources;
-                Priority       = $null;
-                Include        = $null;
-            })
+        if ($null -eq $dataTags)
+        {
+            $dataTags = @()
+
+            # TODO: Remove when all build.json files has been converted to new format
+            $dataTags += @{ "tag" = $data.tag }
+        }
+        
+        $dataTags | ForEach-Object {
+            $tag = $_
+            $options = $tag.'build-options'
+
+            if ($null -eq $options)
+            {
+                $options = @()
+            }
+
+            # Find base images...
+            $baseImages = $dockerFileFromLines | ForEach-Object {
+                $image = $_
+
+                if ($image -like "* as *")
+                {
+                    $image = $image.Substring(0, $image.IndexOf(" as "))
+                }
+            
+                if ($image -like "`$*")
+                {                    
+                    $argName = $image.Replace("`$", "")
+                    $matchingOption = $options | Where-Object { $_.Contains($argName) } | Select-Object -First 1
+
+                    if ($null -ne $matchingOption)
+                    {
+                        # Resolved base image from ARG passed as build-args defined in build-options
+                        $image = $matchingOption.Substring($matchingOption.IndexOf($argName) + $argName.Length).Replace("=", "")
+                    }
+                    else
+                    {
+                        $argDefaultValue = $dockerFileArgLines | Where-Object { $_ -match $argName } | ForEach-Object {
+                            Write-Output $_.Replace($argName, "").Replace("=", "")
+                        }
+
+                        if ([string]::IsNullOrEmpty($argDefaultValue) -eq $false)
+                        {
+                            # Resolved base image from ARG default value
+                            $image = $argDefaultValue
+                        }
+                        else
+                        {
+                            throw ("Parse error in '{0}', Dockerfile is expecting ARG '{1}' but it has no default value and is not found in any 'build-options'." -f $buildFilePath, $argName)
+                        }
+                    }
+                }
+                
+                Write-Output $image
+            }
+
+            if ($null -eq $baseImages -or $baseImages.Length -eq 0)
+            {
+                throw ("Parse error, no base images was found in Dockerfile '{0}'." -f $dockerFile.FullName)
+            }
+            
+            Write-Output (New-Object PSObject -Property @{
+                    Tag            = $tag.tag;
+                    BuildOptions   = @($options);
+                    Base           = @($baseImages | Select-Object -Unique);
+                    Path           = $buildContextPath;
+                    DockerFilePath = $dockerFile.FullName;
+                    Sources        = @($sources);
+                    Priority       = $null;
+                    Include        = $null;
+                })
+        }
     }
 }
 

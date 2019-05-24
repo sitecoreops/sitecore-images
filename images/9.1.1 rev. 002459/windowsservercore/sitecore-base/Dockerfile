@@ -1,5 +1,7 @@
 # escape=`
-FROM mcr.microsoft.com/windows/servercore:ltsc2019 as download
+ARG BASE_IMAGE
+
+FROM $BASE_IMAGE as download
 
 SHELL ["powershell", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';"]
 
@@ -7,8 +9,7 @@ ADD https://download.microsoft.com/download/0/1/D/01DC28EA-638C-4A22-A57B-4CEF97
 ADD https://download.microsoft.com/download/1/2/8/128E2E22-C1B9-44A4-BE2A-5859ED1D4592/rewrite_amd64_en-US.msi C:\\install\\urlrewrite.msi
 ADD https://aka.ms/vs/15/release/VC_redist.x64.exe C:\\install\\VC_redist.x64.exe
 
-# Runtime
-FROM mcr.microsoft.com/dotnet/framework/aspnet:4.7.2-windowsservercore-ltsc2019 as final
+FROM $BASE_IMAGE
 
 COPY --from=download /install /install
 
