@@ -182,6 +182,7 @@ Build your own Docker images out of every released Sitecore version since 8.2 re
 | 8.2.161221 | sitecore | windowsservercore | 1803 | `sitecore:8.2.161221-windowsservercore-1803` [Dockerfile](images/8.2%20rev.%20161221/windowsservercore-1803/sitecore/Dockerfile) |
 | 8.2.161221 | sitecore-sqldev | windowsservercore | 1709 | `sitecore-sqldev:8.2.161221-windowsservercore-1709` [Dockerfile](images/8.2%20rev.%20161221/windowsservercore-1709/sitecore-sqldev/Dockerfile) |
 | 8.2.161221 | sitecore | windowsservercore | 1709 | `sitecore:8.2.161221-windowsservercore-1709` [Dockerfile](images/8.2%20rev.%20161221/windowsservercore-1709/sitecore/Dockerfile) |
+| 8 | sitecore-openjdk | nanoserver | 1903 | `sitecore-openjdk:8-nanoserver-1903` [Dockerfile](images/sitecore-openjdk/nanoserver-1903/Dockerfile) |
 | 8 | sitecore-openjdk | nanoserver | 1809 | `sitecore-openjdk:8-nanoserver-1809` [Dockerfile](images/sitecore-openjdk/nanoserver-1809/Dockerfile) |
 | 8 | sitecore-openjdk | nanoserver | 1803 | `sitecore-openjdk:8-nanoserver-1803` [Dockerfile](images/sitecore-openjdk/nanoserver-1803/Dockerfile) |
 | 8 | sitecore-openjdk | nanoserver | 1709 | `sitecore-openjdk:8-nanoserver-1709` [Dockerfile](images/sitecore-openjdk/nanoserver-1709/Dockerfile) |
