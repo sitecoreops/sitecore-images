@@ -6,6 +6,7 @@ Build your own Docker images out of every released Sitecore version since 8.2 re
 
 ## Changelog
 
+- [Changed] The `build.json` format has changed to support the use of `build-arg` during `docker image build`. In this new format we can support multiple release channels (ie 1803, ltsc2019, 1903) within a single build folder using `ARG` while reducing maintenance time and disk space needed.
 - [Deprecated] Sitecore 8.2 rev. 161221 is now marked as deprecated. You can still build it explicitly using `-Tags "*:8.2.161221*"`.
 - [Deprecated] Sitecore 7.5 is now marked as deprecated. You can still build it explicitly using `-Tags "*:7.5*"`.
 - [**Breaking**] Added build / restore support for deprecated images. Images that are deprecated is not build by default anymore, only when explicitly defined in the `Tags` parameter.
@@ -197,7 +198,6 @@ Build your own Docker images out of every released Sitecore version since 8.2 re
 | ~~7.5.150212~~ | ~~sitecore~~ | ~~windowsservercore~~ | ~~1803~~ | ~~`sitecore:7.5.150212-windowsservercore-1803` [Dockerfile](images/7.5%20rev.%20150212/windowsservercore-1803/sitecore/Dockerfile)~~ |
 | 2017 | mssql-developer | windowsservercore | ltsc2019 | `mssql-developer:2017-windowsservercore-ltsc2019` [Dockerfile](images/mssql-developer-2017/windowsservercore-ltsc2019/Dockerfile) |
 | 2017 | mssql-developer | windowsservercore | 1903 | `mssql-developer:2017-windowsservercore-1903` [Dockerfile](images/mssql-developer-2017/windowsservercore-1903/Dockerfile) |
-
 
 ## Current variants
 
