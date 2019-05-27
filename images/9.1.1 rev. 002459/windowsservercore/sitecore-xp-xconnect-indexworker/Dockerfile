@@ -1,7 +1,10 @@
 # escape=`
-FROM sitecore-xp-xconnect:9.1.1-windowsservercore-1903 as builder
+ARG BUILD_IMAGE
+ARG BASE_IMAGE
 
-FROM sitecore-xp-base:9.1.1-windowsservercore-1903 as final
+FROM $BUILD_IMAGE as builder
+
+FROM $BASE_IMAGE
 
 COPY --from=builder ["/inetpub/xconnect/App_Data/jobs/continuous/IndexWorker", "/IndexWorker"]
 

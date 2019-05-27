@@ -1,5 +1,7 @@
 # escape=`
-FROM mcr.microsoft.com/windows/servercore:1903 as builder
+ARG BASE_IMAGE
+
+FROM $BASE_IMAGE as builder
 
 SHELL ["powershell", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';"]
 
@@ -12,8 +14,7 @@ RUN $env:SIF_CONFIG = 'createcert.json'; `
     Expand-Archive -Path (Join-Path $env:INSTALL_TEMP '*Configuration files*.zip') -DestinationPath $env:INSTALL_TEMP; `
     Rename-Item -Path (Resolve-Path (Join-Path $env:INSTALL_TEMP $env:SIF_CONFIG)).Path -NewName 'config.json';
 
-# Runtime
-FROM sitecore-base:9.1.1-windowsservercore-1903 as final
+FROM $BASE_IMAGE
 
 COPY --from=builder ["/install/config.json", "/install/"]
 
